@@ -1,18 +1,17 @@
 /**
  * CoursePlayer — Presentation (docs/01 §1.1). Orchestrates the course states
  * from useCourse + the auth store:
- *   not signed in → gate · signed in, no access → sales · access → player.
+ *   not signed in → sales pitch (sign-in CTA) · signed in, no access → sales
+ *   (checkout) · access → player.
  * It calls hook methods only; no fetch, adapter, or token here.
  */
 "use client";
 
 import { useCourse } from "../hooks/useCourse";
-import { getCourseMeta } from "../catalog";
 import { CourseSales } from "./CourseSales";
 import { Player } from "./Player";
 import { useAuthStore } from "@/stores/auth.store";
-import { Card, Button, ButtonLink, Alert } from "@/components/ui";
-import { GradientText } from "@/components/GradientText";
+import { Card, Button, Alert } from "@/components/ui";
 import { PageSplash } from "@/components/PageSplash";
 
 export function CoursePlayer({ courseId }: { courseId: string }) {
@@ -29,33 +28,13 @@ export function CoursePlayer({ courseId }: { courseId: string }) {
     confirmEntitlement,
     devUnlock,
   } = useCourse(courseId);
-  const meta = getCourseMeta(courseId);
 
   // Session still resolving.
   if (status === "loading") return <PageSplash label="Loading course…" />;
 
-  // Signed out → gate.
+  // Signed out → show the full course pitch with sign-in CTAs (not a dead-end box).
   if (status === "anonymous") {
-    return (
-      <div className="mx-auto max-w-md">
-        <Card>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">
-            Sign in to open <GradientText>{meta.title}</GradientText>
-          </h1>
-          <p className="mt-2 text-sm text-zinc-400">
-            You need an account to check access and track your progress.
-          </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href={`/login?next=/course/${courseId}`} className="flex-1">
-              Log in
-            </ButtonLink>
-            <ButtonLink href={`/register?next=/course/${courseId}`} variant="ghost" className="flex-1">
-              Create account
-            </ButtonLink>
-          </div>
-        </Card>
-      </div>
-    );
+    return <CourseSales courseId={courseId} authed={false} />;
   }
 
   if (phase === "loading") return <PageSplash label="Checking your access…" />;
@@ -79,6 +58,7 @@ export function CoursePlayer({ courseId }: { courseId: string }) {
     return (
       <CourseSales
         courseId={courseId}
+        authed
         confirming={confirming}
         confirmTimedOut={confirmTimedOut}
         onEntitled={confirmEntitlement}
