@@ -1,0 +1,3 @@
+# Logic / Orchestration layer (Trinity — docs/01 §1).
+# Business rules, orchestration, and authorization decisions live here.
+# Empty in this scaffold; services arrive with the auth/course/payment steps.

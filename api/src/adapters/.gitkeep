@@ -1,0 +1,3 @@
+# Serialization Adapters (Trinity Data layer — docs/02). Transform rich domain
+# objects to lean DB documents and back. Pure functions, called only by
+# repositories. Empty in this scaffold.

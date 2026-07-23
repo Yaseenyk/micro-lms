@@ -1,0 +1,3 @@
+# Data layer (Trinity — docs/01 §1). The ONLY place Mongoose models are queried.
+# Repositories call Serialization Adapters on every read/write (docs/02).
+# Empty in this scaffold; added when MongoDB is wired.
