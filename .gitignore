@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# secrets — never commit real values (see docs/01 §2.1)
+.env
+.env.local
+.env.*.local
+
+# build output
+.next/
+out/
+dist/
+build/
+
+# logs & os
+*.log
+.DS_Store
+Thumbs.db
