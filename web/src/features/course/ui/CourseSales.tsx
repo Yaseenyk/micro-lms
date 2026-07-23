@@ -12,16 +12,22 @@ import { GradientText } from "@/components/GradientText";
 import { SectionLabel } from "@/components/SectionLabel";
 import { PulseDot } from "@/components/PulseDot";
 
+// Vite/Next inline this at build time: "development" under `npm run dev`,
+// "production" in the exported build — so the bypass never ships to prod.
+const DEV = process.env.NODE_ENV !== "production";
+
 export function CourseSales({
   courseId,
   confirming,
   confirmTimedOut,
   onEntitled,
+  onDevUnlock,
 }: {
   courseId: string;
   confirming: boolean;
   confirmTimedOut: boolean;
   onEntitled: () => void | Promise<void>;
+  onDevUnlock: () => void | Promise<void>;
 }) {
   const meta = getCourseMeta(courseId);
 
@@ -105,6 +111,15 @@ export function CourseSales({
                 automatically; refresh if it doesn&apos;t appear shortly.
               </Alert>
             </div>
+          )}
+
+          {DEV && !confirming && (
+            <button
+              onClick={() => void onDevUnlock()}
+              className="mt-3 w-full rounded-lg border border-dashed border-amber-500/40 bg-amber-500/[0.04] px-4 py-2.5 text-xs font-medium text-amber-300/90 transition-colors hover:bg-amber-500/[0.08]"
+            >
+              ⚡ Dev only · skip payment &amp; unlock
+            </button>
           )}
 
           <ul className="mt-6 space-y-2 text-xs text-zinc-500">

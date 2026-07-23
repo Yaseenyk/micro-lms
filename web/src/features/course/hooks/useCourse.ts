@@ -55,6 +55,17 @@ export function useCourse(courseId: string) {
     if (next) setProgress(next);
   }, []);
 
+  /** DEV ONLY: bypass payment, grant entitlement, then reload access. */
+  const devUnlock = useCallback(async () => {
+    setConfirming(true);
+    try {
+      await courseService.devUnlock(courseId);
+      await load();
+    } finally {
+      setConfirming(false);
+    }
+  }, [courseId, load]);
+
   /** Poll access after a checkout success until the webhook grants entitlement. */
   const confirmEntitlement = useCallback(async () => {
     setConfirming(true);
@@ -86,5 +97,6 @@ export function useCourse(courseId: string) {
     reload: load,
     saveProgress,
     confirmEntitlement,
+    devUnlock,
   };
 }

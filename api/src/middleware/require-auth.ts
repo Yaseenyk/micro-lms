@@ -3,8 +3,6 @@
  * expiry, issuer, and audience with a pinned algorithm, then attaches a typed
  * `req.auth`. Handlers never parse tokens themselves. Authorization decisions
  * (role/ownership) belong in the Logic layer, not here.
- *
- * Not yet mounted on any route — auth routes arrive in a later step.
  */
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";

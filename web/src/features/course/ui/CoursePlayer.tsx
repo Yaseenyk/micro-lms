@@ -27,6 +27,7 @@ export function CoursePlayer({ courseId }: { courseId: string }) {
     reload,
     saveProgress,
     confirmEntitlement,
+    devUnlock,
   } = useCourse(courseId);
   const meta = getCourseMeta(courseId);
 
@@ -81,6 +82,7 @@ export function CoursePlayer({ courseId }: { courseId: string }) {
         confirming={confirming}
         confirmTimedOut={confirmTimedOut}
         onEntitled={confirmEntitlement}
+        onDevUnlock={devUnlock}
       />
     );
   }
