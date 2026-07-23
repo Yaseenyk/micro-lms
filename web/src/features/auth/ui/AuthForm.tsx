@@ -11,6 +11,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuth } from "../hooks/useAuth";
 import { Alert, Button, Card, Field, Spinner } from "@/components/ui";
+import { PasswordField } from "@/components/PasswordField";
 import { GradientText } from "@/components/GradientText";
 
 function nextPath(): string {
@@ -84,9 +85,8 @@ export function AuthForm({ mode }: { mode: "register" | "login" }) {
             autoComplete="email"
             required
           />
-          <Field
+          <PasswordField
             label="Password"
-            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="At least 8 characters"

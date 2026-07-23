@@ -27,7 +27,7 @@ Identity, auth, and entitlement.
 | Field | Type | Notes |
 | --- | --- | --- |
 | `_id` | ObjectId | Primary key. |
-| `email` | string | **Unique**, lowercased, trimmed. |
+| `email` | string | **Unique**, canonicalized for dedup: lowercased + trimmed; for `gmail.com`/`googlemail.com` the dots and `+tag` in the local part are stripped and the domain folded to `gmail.com` (see `lib/email.ts`). Stored + matched in canonical form so aliases map to one account. |
 | `pwdHash` | string | Argon2id/bcrypt hash. Never returned to any layer above Data. |
 | `name` | string | Display name. |
 | `role` | string enum | `"student"` \| `"admin"`. Drives authorization. |

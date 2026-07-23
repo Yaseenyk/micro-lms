@@ -13,6 +13,7 @@ import {
   hashRefreshToken,
   signAccessToken,
 } from "../lib/jwt.js";
+import { normalizeEmail } from "../lib/email.js";
 import { AppError } from "../lib/app-error.js";
 
 export interface AuthResult {
@@ -30,15 +31,27 @@ async function issueTokens(user: UserDomain): Promise<AuthResult> {
 
 export const authService = {
   async register(input: { email: string; password: string; name: string }): Promise<AuthResult> {
-    const existing = await userRepository.findByEmail(input.email);
+    // Canonicalize so Gmail dot/plus aliases can't create duplicate accounts.
+    const email = normalizeEmail(input.email);
+    const existing = await userRepository.findByEmail(email);
     if (existing) throw new AppError("CONFLICT", "Email already registered");
     const pwdHash = await hashPassword(input.password);
-    const user = await userRepository.create({ email: input.email, pwdHash, name: input.name });
-    return issueTokens(user);
+    try {
+      const user = await userRepository.create({ email, pwdHash, name: input.name });
+      return issueTokens(user);
+    } catch (err) {
+      // Two concurrent registrations of the same canonical email: the unique
+      // index is the final arbiter (E11000) — surface it as a clean CONFLICT.
+      if (err && typeof err === "object" && (err as { code?: number }).code === 11000) {
+        throw new AppError("CONFLICT", "Email already registered");
+      }
+      throw err;
+    }
   },
 
   async login(input: { email: string; password: string }): Promise<AuthResult> {
-    const found = await userRepository.findAuthByEmail(input.email);
+    // Same canonicalization as register, so any alias logs into the one account.
+    const found = await userRepository.findAuthByEmail(normalizeEmail(input.email));
     // Generic failure — never reveal whether the email exists (docs/04 §3).
     if (!found || !(await verifyPassword(input.password, found.pwdHash))) {
       throw new AppError("UNAUTHENTICATED", "Invalid email or password");
