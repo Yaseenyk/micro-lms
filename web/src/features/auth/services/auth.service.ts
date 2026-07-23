@@ -25,4 +25,11 @@ export const authService = {
       skipAuthRefresh: true,
     });
   },
+
+  /** Mint a fresh access token from the httpOnly refresh cookie (docs/04 §4). */
+  refresh(): Promise<{ accessToken: string }> {
+    return apiClient.post<{ accessToken: string }>("/auth/refresh", undefined, {
+      skipAuthRefresh: true,
+    });
+  },
 };

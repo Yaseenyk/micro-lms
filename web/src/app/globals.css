@@ -2,12 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply text-zinc-100 antialiased;
+    /* A wide widget must never push the whole page into horizontal scroll on
+       mobile — wide content scrolls inside its own container instead. */
+    overflow-x: hidden;
+    background-color: #05070a;
+    background-image:
+      radial-gradient(55rem 40rem at 50% -12%, rgba(34, 211, 238, 0.08), transparent 60%),
+      radial-gradient(48rem 38rem at 100% 8%, rgba(168, 85, 247, 0.07), transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    @apply bg-cyan text-ink;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
-body {
-  background-color: #05070a;
-  color: #e2e8f0;
-  -webkit-font-smoothing: antialiased;
+@layer utilities {
+  /* Animated Cyan→Purple gradient text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyan via-purple to-cyan bg-clip-text text-transparent;
+    background-size: 200% auto;
+  }
 }

@@ -12,7 +12,7 @@ export function generateStaticParams(): Array<{ courseId: string }> {
 
 export default function CoursePage({ params }: { params: { courseId: string } }) {
   return (
-    <Container>
+    <Container className="py-6 sm:py-10">
       <CoursePlayer courseId={params.courseId} />
     </Container>
   );
