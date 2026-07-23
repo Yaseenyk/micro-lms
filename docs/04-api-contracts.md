@@ -160,6 +160,36 @@ already stripped derived/transient fields); the API re-adapts to the DB tuple.
 as §6). Ownership is enforced (a user may only write their own progress →
 `403 FORBIDDEN` otherwise). Errors: `401`, `403`, `422`, `404` (no entitlement).
 
+## 7b. `POST /api/course/lesson` *(protected)*
+
+Fetch the **textual + SVG** content of a single lesson (docs/03 §4). Gated by
+entitlement: a user who does not own the course gets `404 NOT_FOUND` (same as
+progress writes — access is not leaked).
+
+**Request** `{ "courseId": "course_abc", "lessonId": "les_1" }`
+
+**Response `200`**
+
+```jsonc
+{ "ok": true, "data": {
+  "courseId": "course_abc",
+  "lessonId": "les_1",
+  "title": "How a decoupled app fits together",
+  "minutes": 24,
+  "blocks": [
+    { "type": "heading",   "text": "The two-halves model" },
+    { "type": "paragraph", "text": "A decoupled app is really two programs…" },
+    { "type": "code",      "language": "ts", "code": "export const api = …" },
+    { "type": "callout",   "tone": "info", "text": "Rule of thumb: …" },
+    { "type": "svg",       "svg": "<svg …>…</svg>", "caption": "Request lifecycle" }
+  ]
+}}
+```
+
+Errors: `401`, `422`, `404 NOT_FOUND` (no entitlement, or lesson has no content).
+
+---
+
 ## 8. `POST /api/payment/order` *(protected)*
 
 Create a Razorpay order for a course. Amount is resolved **server-side** from
@@ -215,6 +245,7 @@ already-processed events. `400` only for signature failure.
 | POST | `/api/auth/logout` | cookie | Revoke session. |
 | POST | `/api/course/access` | Bearer | Check access + resume state. |
 | PATCH | `/api/course/progress` | Bearer | Persist progress (lean update). |
+| POST | `/api/course/lesson` | Bearer | Fetch a lesson's textual + SVG content (entitlement-gated). |
 | POST | `/api/payment/order` | Bearer | Create Razorpay order (server-priced). |
 | POST | `/api/webhooks/razorpay` | signature | Verified payment + entitlement source of truth. |
 

@@ -3,9 +3,10 @@
  * progress writes. Authorization (entitlement + ownership) lives HERE, not in
  * the handler (docs/01 §2.2).
  */
-import type { CourseProgressDomain } from "../domain/types.js";
+import type { CourseProgressDomain, LessonContentDomain } from "../domain/types.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { courseProgressRepository } from "../repositories/course-progress.repository.js";
+import { courseContentRepository } from "../repositories/course-content.repository.js";
 import { getCatalogCourse } from "../config/catalog.js";
 import { AppError } from "../lib/app-error.js";
 
@@ -51,5 +52,21 @@ export const courseService = {
         watchedSec: input.watchedSec,
       },
     });
+  },
+
+  /** Lesson content (docs/04 §7b). Entitlement-gated — no access is not leaked. */
+  async getLesson(
+    userId: string,
+    courseId: string,
+    lessonId: string,
+  ): Promise<LessonContentDomain> {
+    const user = await userRepository.findById(userId);
+    if (!user) throw new AppError("UNAUTHENTICATED", "User not found");
+    if (!user.entitlements.includes(courseId)) {
+      throw new AppError("NOT_FOUND", "No access to this course");
+    }
+    const content = await courseContentRepository.get(courseId, lessonId);
+    if (!content) throw new AppError("NOT_FOUND", "Lesson not found");
+    return content;
   },
 };

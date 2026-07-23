@@ -13,6 +13,7 @@ import {
   type WireAccess,
   type WireProgress,
 } from "@/lib/adapters/course-progress.adapter";
+import type { LessonContent } from "../content.types";
 
 export const courseService = {
   async getAccess(courseId: string): Promise<CourseAccess> {
@@ -24,6 +25,11 @@ export const courseService = {
     const body = courseProgressAdapter.toLeanBody(update);
     const wire = await apiClient.patch<WireProgress>("/course/progress", body);
     return courseProgressAdapter.toDomain(wire);
+  },
+
+  /** Fetch a lesson's textual + SVG content (docs/04 §7b). Entitlement-gated. */
+  getLesson(courseId: string, lessonId: string): Promise<LessonContent> {
+    return apiClient.post<LessonContent>("/course/lesson", { courseId, lessonId });
   },
 
   /**

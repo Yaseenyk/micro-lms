@@ -1,10 +1,11 @@
 /**
  * Course catalog — the server-side source of truth for price and lesson count
- * (docs/03 §4: content is static catalog data referenced by id). Prices are
- * resolved here, NEVER trusted from the client (docs/04 §8). This is app data,
- * not a secret, so it lives in code; swap for a DB/CMS lookup later without
- * changing callers.
+ * (docs/04 §8: prices are resolved here, NEVER trusted from the client). Derived
+ * from the authored course content (content/courses.ts) so price + lesson count
+ * never drift from the lessons that actually exist.
  */
+import { COURSES } from "../content/courses.js";
+
 export interface CatalogCourse {
   id: string;
   title: string;
@@ -12,9 +13,12 @@ export interface CatalogCourse {
   totalLessons: number;
 }
 
-const CATALOG: Record<string, CatalogCourse> = {
-  course_abc: { id: "course_abc", title: "Sample Course", priceInPaise: 49_900, totalLessons: 12 },
-};
+const CATALOG: Record<string, CatalogCourse> = Object.fromEntries(
+  COURSES.map((c) => [
+    c.id,
+    { id: c.id, title: c.title, priceInPaise: c.priceInPaise, totalLessons: c.lessons.length },
+  ]),
+);
 
 export function getCatalogCourse(id: string): CatalogCourse | null {
   return CATALOG[id] ?? null;

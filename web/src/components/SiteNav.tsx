@@ -22,9 +22,9 @@ export function SiteNav() {
     status === "authenticated"
       ? [
           { href: "/dashboard", label: "Dashboard" },
-          { href: "/course/course_abc", label: "Course" },
+          { href: "/courses", label: "Courses" },
         ]
-      : [{ href: "/course/course_abc", label: "Course" }];
+      : [{ href: "/courses", label: "Courses" }];
 
   return (
     <>

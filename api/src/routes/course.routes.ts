@@ -42,6 +42,18 @@ courseRouter.post("/course/access", requireAuth, async (req, res, next) => {
   }
 });
 
+const lessonSchema = z.object({ courseId: z.string().min(1), lessonId: z.string().min(1) });
+courseRouter.post("/course/lesson", requireAuth, async (req, res, next) => {
+  try {
+    const { courseId, lessonId } = lessonSchema.parse(req.body);
+    const { userId } = getAuth(req);
+    const content = await courseService.getLesson(userId, courseId, lessonId);
+    sendOk(res, content); // { courseId, lessonId, title, minutes, blocks }
+  } catch (err) {
+    next(err);
+  }
+});
+
 const progressSchema = z.object({
   courseId: z.string().min(1),
   lessonId: z.string().min(1),

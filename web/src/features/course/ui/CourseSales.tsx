@@ -44,7 +44,7 @@ export function CourseSales({
       <div>
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/[0.06] px-4 py-1.5 text-xs font-medium text-emerald-300">
           <PulseDot color="bg-emerald-400" />
-          You&apos;re looking at the final project
+          Text-first · read at your pace
         </div>
         <SectionLabel index="01" title="Course" />
         <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-zinc-50 sm:text-5xl">

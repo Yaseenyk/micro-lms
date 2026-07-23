@@ -121,24 +121,69 @@ One document per `(user, course)`. Optimized hard for the Serialization Adapter
 
 ---
 
-## 4. Relationships (at a glance)
+## 4. `courseContent`
+
+The lesson **content** itself: detailed, textual, SVG-illustrated. One document
+per `(courseId, lessonId)`. This is read-mostly catalog data (not write-hot like
+`courseProgress`), so it uses readable field names rather than compact keys. It
+is the paid product — reads are gated by entitlement (doc 04 §7b).
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `_id` | ObjectId | Primary key. |
+| `courseId` | string | Course this lesson belongs to. |
+| `lessonId` | string | Lesson id (matches the catalog lesson ids). |
+| `order` | number | Position within the course (1-based). |
+| `title` | string | Lesson title. |
+| `minutes` | number | Estimated read time. |
+| `blocks` | Block[] | Ordered content blocks (see below). |
+| `sv` | number | Schema version. |
+| `createdAt` / `updatedAt` | number | Unix seconds. |
+
+**Block** is a discriminated union rendered by the client:
+
+```jsonc
+{ "type": "heading",   "text": "…" }
+{ "type": "paragraph", "text": "…" }          // supports `inline code` backtick spans
+{ "type": "list",      "items": ["…", "…"] }
+{ "type": "code",      "language": "ts", "code": "…" }
+{ "type": "callout",   "tone": "info|warn|success", "text": "…" }
+{ "type": "svg",       "svg": "<svg …>…</svg>", "caption": "…" }   // brand-styled diagram
+```
+
+**Indexes**
+
+- `{ courseId: 1, lessonId: 1 }` unique.
+- `{ courseId: 1, order: 1 }` (ordered listing).
+
+**Rules**
+
+- Content is **admin-seeded** (see `api/src/scripts/seed-content.ts`); there is
+  no public write endpoint, so stored `svg` markup is trusted content.
+- Reads require entitlement — the same gate as `courseProgress` (doc 04 §7b).
+- No videos: lessons are textual + SVG only.
+
+---
+
+## 5. Relationships (at a glance)
 
 ```
 users (1) ──< transactions (N)          // a user has many payment attempts
 users (1) ──< courseProgress (N)         // a user has progress per course
+courses (1) ──< courseContent (N)        // a course has one content doc per lesson
 users.entitlements ⊇ { courseId }        // granted only via a paid transaction
 ```
 
-Course/lesson **content** (titles, video ids, lesson lists) is treated as
-relatively static catalog data and is out of scope for these three write-hot
-collections; it is referenced by id only.
+Course/lesson **catalog** data (price, lesson list, titles) stays server-side in
+`config/catalog.ts`; the per-lesson **body** lives in `courseContent`.
 
-## 5. Enforcement checklist
+## 7. Enforcement checklist
 
 - [ ] Amounts are integer paise, never floats.
 - [ ] Timestamps are unix seconds in documents.
 - [ ] `pwdHash` / `refreshTokenHash` never leave the Data layer.
 - [ ] `courseProgress` stores no derived fields; lessons are compact tuples.
-- [ ] Unique indexes exist on `email`, `orderId`, `paymentId`, and `(u,c)`.
+- [ ] Unique indexes exist on `email`, `orderId`, `paymentId`, `(u,c)`, and `courseContent (courseId,lessonId)`.
+- [ ] Lesson content reads are gated by entitlement; content is textual + SVG only (no video).
 - [ ] Entitlements are written only by the verified webhook path.
 - [ ] Every collection carries `sv`, `createdAt`, `updatedAt`.

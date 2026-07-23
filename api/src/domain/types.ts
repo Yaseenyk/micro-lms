@@ -36,3 +36,20 @@ export interface CourseProgressDomain {
   isComplete: boolean;
   lastActiveAt: string;
 }
+
+/** Lesson content blocks (docs/03 §4). Textual + SVG only — no video. */
+export type ContentBlock =
+  | { type: "heading"; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "list"; items: string[] }
+  | { type: "code"; language?: string; code: string }
+  | { type: "callout"; tone: "info" | "warn" | "success"; text: string }
+  | { type: "svg"; svg: string; caption?: string };
+
+export interface LessonContentDomain {
+  courseId: string;
+  lessonId: string;
+  title: string;
+  minutes: number;
+  blocks: ContentBlock[];
+}

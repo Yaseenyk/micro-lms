@@ -9,9 +9,9 @@ import { PulseDot } from "./PulseDot";
 import { CheckIcon } from "./Icons";
 
 const POINTS = [
-  "Build the exact platform you're using",
-  "Real auth, real payments, real webhooks",
-  "Architecture you can defend in an interview",
+  "Ten text-first courses across the AI stack",
+  "Detailed writing and clear diagrams — no video",
+  "Progress that saves and resumes anywhere",
 ];
 
 export function AuthShell({ mode, children }: { mode: "register" | "login"; children: ReactNode }) {
