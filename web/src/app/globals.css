@@ -44,4 +44,26 @@
     @apply bg-gradient-to-r from-cyan via-purple to-cyan bg-clip-text text-transparent;
     background-size: 200% auto;
   }
+
+  /* Thin, unobtrusive scrollbar for inner panels (lesson rail). */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(63, 63, 70, 0.6) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(63, 63, 70, 0.6);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Faint dot-grid used behind the lesson stage. */
+  .bg-dotgrid {
+    background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
 }
