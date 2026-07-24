@@ -50,7 +50,9 @@ export type ContentBlock =
   | { type: "objectives"; items: string[] }
   | { type: "steps"; items: string[] }
   | { type: "exercise"; title?: string; text: string; hint?: string }
-  | { type: "summary"; items: string[] };
+  | { type: "summary"; items: string[] }
+  // long-form authored content, rendered as GFM on the client
+  | { type: "markdown"; markdown: string };
 
 export interface LessonContentDomain {
   courseId: string;

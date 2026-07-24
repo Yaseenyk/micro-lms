@@ -156,7 +156,20 @@ is the paid product — reads are gated by entitlement (doc 04 §7b).
 { "type": "steps",      "items": ["…"] }               // ordered procedure
 { "type": "exercise",   "title": "…", "text": "…", "hint": "…" }  // practice task
 { "type": "summary",    "items": ["…"] }               // recap, closes a lesson
+
+// long-form authored content
+{ "type": "markdown",   "markdown": "# Heading\n\nGFM body…" }
 ```
+
+**The `markdown` block** carries a whole authored module as one GitHub-Flavoured
+Markdown string — headings, tables, blockquotes, nested lists, and fenced code.
+It is rendered at runtime on the client (`react-markdown` + `remark-gfm`), with
+`rehype-highlight` colouring fenced code and ` ```mermaid ` fences rendered as
+SVG diagrams. This is the paste-a-module path: author a `.mdx` file, seed it with
+`npm run seed:md`, and it renders with no rebuild.
+
+> Blocks and markdown compose freely. A lesson may be a single `markdown` block,
+> or structured blocks with a `markdown` block embedded for a long passage.
 
 **Lesson shape (enforced by review, not by code).** A paid lesson opens with
 `objectives`, develops the idea across several `heading`/`paragraph` sections

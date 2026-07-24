@@ -12,6 +12,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "seed": "tsx src/scripts/seed-content.ts",
+    "seed:md": "tsx src/scripts/seed-markdown.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

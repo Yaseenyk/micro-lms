@@ -8,6 +8,7 @@
 
 import { Fragment, type ReactNode } from "react";
 import type { ContentBlock } from "../content.types";
+import { LessonMarkdown } from "./LessonMarkdown";
 
 /**
  * Inline markdown: `code`, **bold**, *italic*. Split on all three at once so a
@@ -51,6 +52,10 @@ const calloutLabel = { info: "Note", warn: "Watch out", success: "Rule of thumb"
 
 function Block({ block }: { block: ContentBlock }) {
   switch (block.type) {
+    // A whole authored module: GFM + syntax highlighting + mermaid diagrams.
+    case "markdown":
+      return <LessonMarkdown markdown={block.markdown} />;
+
     case "heading":
       return <h2 className="mt-10 text-xl font-semibold tracking-tight text-zinc-50">{block.text}</h2>;
 

@@ -128,7 +128,7 @@ export const COURSES: CourseMeta[] = [
       "Stop tuning by vibes",
     ],
     lessons: [
-      L("les_1", "Anatomy of a good prompt", 22),
+      L("les_1", "The Core Mechanics", 48),
       L("les_2", "Few-shot and reasoning patterns", 24),
       L("les_3", "Building an evaluation set", 26),
       L("les_4", "Automated scoring and LLM judges", 23),

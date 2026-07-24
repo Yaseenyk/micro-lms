@@ -31,6 +31,8 @@ function toBlock(raw: unknown): ContentBlock | null {
             ...(typeof b.caption === "string" ? { caption: b.caption } : {}),
           }
         : null;
+    case "markdown":
+      return typeof b.markdown === "string" ? { type: "markdown", markdown: b.markdown } : null;
     case "objectives":
       return isStrArray(b.items) ? { type: "objectives", items: b.items } : null;
     case "steps":

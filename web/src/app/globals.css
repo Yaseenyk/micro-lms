@@ -67,3 +67,66 @@
     background-size: 22px 22px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Syntax highlighting for rehype-highlight (hljs-* classes), themed to the
+   brand palette instead of shipping a third-party stylesheet. Applies to the
+   Python / TypeScript fences inside markdown lessons.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .hljs {
+    color: #d4d4d8; /* zinc-300 base */
+  }
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-literal,
+  .hljs-section,
+  .hljs-doctag,
+  .hljs-name {
+    color: #22d3ee; /* cyan */
+  }
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-title.class_,
+  .hljs-built_in {
+    color: #a855f7; /* violet */
+  }
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-addition {
+    color: #86efac;
+  }
+  .hljs-number,
+  .hljs-symbol,
+  .hljs-bullet,
+  .hljs-link {
+    color: #67e8f9; /* ice */
+  }
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-property,
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-params {
+    color: #e4e4e7;
+  }
+  .hljs-comment,
+  .hljs-quote,
+  .hljs-meta {
+    color: #52525b;
+    font-style: italic;
+  }
+  .hljs-type,
+  .hljs-class .hljs-title {
+    color: #67e8f9;
+  }
+  .hljs-deletion {
+    color: #fda4af;
+  }
+  .hljs-emphasis {
+    font-style: italic;
+  }
+  .hljs-strong {
+    font-weight: 600;
+  }
+}
