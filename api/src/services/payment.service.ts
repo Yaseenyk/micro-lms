@@ -38,7 +38,9 @@ export const paymentService = {
       orderId: order.id,
       amount: course.priceInPaise,
       currency: "INR",
-      razorpayKeyId: env.RAZORPAY_KEY_ID, // publishable id only
+      // Publishable id only. Non-null here: this route is unmounted in
+      // free-access mode, and createOrder above already required the keys.
+      razorpayKeyId: env.RAZORPAY_KEY_ID ?? "",
     };
   },
 };

@@ -5,6 +5,24 @@
 > API. **Changing a contract means changing this document first**, then the
 > code. The frontend codes against these shapes, never against raw DB documents.
 
+## 0a. Free-access mode (current default)
+
+The platform currently runs **free**: `FREE_ACCESS` (env, defaults to `true`)
+makes every catalog course available to any authenticated user. While it is on:
+
+- `POST /api/course/access` always returns `access: true` for a catalog course.
+- `POST /api/course/lesson` and `PATCH /api/course/progress` require only a
+  valid session, not an entitlement.
+- `POST /api/payment/order` and `POST /api/webhooks/razorpay` are **not mounted**,
+  and no Razorpay credentials are required to boot.
+
+Setting `FREE_ACCESS=false` restores the paid flow exactly as specified in §8–9;
+the Razorpay keys then become required at boot (docs/01 §2.1 fail-fast). The
+entitlement model in `users.entitlements` is untouched either way — free mode
+bypasses the check, it does not delete the data.
+
+---
+
 ## 0. Conventions
 
 - **Base URL:** the Railway API origin (from `NEXT_PUBLIC_API_URL` on the

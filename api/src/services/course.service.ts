@@ -8,7 +8,18 @@ import { userRepository } from "../repositories/user.repository.js";
 import { courseProgressRepository } from "../repositories/course-progress.repository.js";
 import { courseContentRepository } from "../repositories/course-content.repository.js";
 import { getCatalogCourse } from "../config/catalog.js";
+import { isFreeAccess } from "../config/env.js";
 import { AppError } from "../lib/app-error.js";
+
+/**
+ * The single entitlement decision (docs/04 §0a). In free-access mode every
+ * catalog course is open to any signed-in user; otherwise access is granted
+ * only by the verified payment webhook writing `users.entitlements`.
+ */
+function isEntitled(entitlements: string[], courseId: string): boolean {
+  if (isFreeAccess) return getCatalogCourse(courseId) !== null;
+  return entitlements.includes(courseId);
+}
 
 export const courseService = {
   async checkAccess(
@@ -17,7 +28,7 @@ export const courseService = {
   ): Promise<{ access: boolean; progress: CourseProgressDomain | null }> {
     const user = await userRepository.findById(userId);
     if (!user) throw new AppError("UNAUTHENTICATED", "User not found");
-    if (!user.entitlements.includes(courseId)) return { access: false, progress: null };
+    if (!isEntitled(user.entitlements, courseId)) return { access: false, progress: null };
     const progress = await courseProgressRepository.get(userId, courseId);
     return { access: true, progress };
   },
@@ -35,7 +46,7 @@ export const courseService = {
     const user = await userRepository.findById(userId);
     if (!user) throw new AppError("UNAUTHENTICATED", "User not found");
     // Ownership: a user may only write progress for a course they own.
-    if (!user.entitlements.includes(input.courseId)) {
+    if (!isEntitled(user.entitlements, input.courseId)) {
       throw new AppError("NOT_FOUND", "No access to this course");
     }
     const course = getCatalogCourse(input.courseId);
@@ -62,7 +73,7 @@ export const courseService = {
   ): Promise<LessonContentDomain> {
     const user = await userRepository.findById(userId);
     if (!user) throw new AppError("UNAUTHENTICATED", "User not found");
-    if (!user.entitlements.includes(courseId)) {
+    if (!isEntitled(user.entitlements, courseId)) {
       throw new AppError("NOT_FOUND", "No access to this course");
     }
     const content = await courseContentRepository.get(courseId, lessonId);

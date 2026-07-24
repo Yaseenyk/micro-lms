@@ -1,11 +1,11 @@
 /**
  * useCourse — Logic layer (docs/01 §1.2). Owns the runtime course state: the
- * access decision, resume progress, saving progress, and confirming entitlement
- * after checkout.
+ * access decision, resume progress, and saving progress.
  *
- * Entitlement is granted by the verified webhook (docs/04 §9), not the client's
- * Razorpay success callback — so after checkout we *poll* /course/access until
- * access flips true (or we give up), rather than trusting the callback.
+ * The platform currently runs in free-access mode (docs/04 §0a), so any
+ * signed-in user is entitled to every catalog course. The access flag is still
+ * read from the API rather than assumed, so re-enabling payments needs no
+ * change here.
  */
 "use client";
 
@@ -17,18 +17,12 @@ import { useAuthStore } from "@/stores/auth.store";
 
 type Phase = "loading" | "ready" | "error";
 
-const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-const CONFIRM_ATTEMPTS = 8;
-const CONFIRM_INTERVAL_MS = 2500;
-
 export function useCourse(courseId: string) {
   const status = useAuthStore((s) => s.status);
   const [phase, setPhase] = useState<Phase>("loading");
   const [access, setAccess] = useState(false);
   const [progress, setProgress] = useState<CourseProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [confirming, setConfirming] = useState(false);
-  const [confirmTimedOut, setConfirmTimedOut] = useState(false);
 
   const load = useCallback(async () => {
     setPhase("loading");
@@ -55,48 +49,12 @@ export function useCourse(courseId: string) {
     if (next) setProgress(next);
   }, []);
 
-  /** DEV ONLY: bypass payment, grant entitlement, then reload access. */
-  const devUnlock = useCallback(async () => {
-    setConfirming(true);
-    try {
-      await courseService.devUnlock(courseId);
-      await load();
-    } finally {
-      setConfirming(false);
-    }
-  }, [courseId, load]);
-
-  /** Poll access after a checkout success until the webhook grants entitlement. */
-  const confirmEntitlement = useCallback(async () => {
-    setConfirming(true);
-    setConfirmTimedOut(false);
-    try {
-      for (let attempt = 0; attempt < CONFIRM_ATTEMPTS; attempt += 1) {
-        const result = await courseService.getAccess(courseId).catch(() => null);
-        if (result?.access) {
-          setAccess(true);
-          setProgress(result.progress);
-          setConfirming(false);
-          return;
-        }
-        await delay(CONFIRM_INTERVAL_MS);
-      }
-      setConfirmTimedOut(true);
-    } finally {
-      setConfirming(false);
-    }
-  }, [courseId]);
-
   return {
     phase,
     access,
     progress,
     error,
-    confirming,
-    confirmTimedOut,
     reload: load,
     saveProgress,
-    confirmEntitlement,
-    devUnlock,
   };
 }

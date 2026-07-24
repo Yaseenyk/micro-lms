@@ -16,10 +16,13 @@ export interface CourseMeta {
   title: string;
   tagline: string;
   blurb: string;
+  /** Currently "Free" for every course (docs/04 §0a). */
   priceLabel: string;
   hours: string;
   lessons: CourseLesson[];
   outcomes: string[];
+  /** The low-friction entry course the landing page points newcomers at. */
+  starter?: boolean;
 }
 
 const L = (id: string, title: string, minutes: number): CourseLesson => ({ id, title, minutes });
@@ -31,7 +34,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Give language models a memory they can cite.",
     blurb:
       "Build RAG systems that ground answers in your own data — chunking, embeddings, vector search, and the prompt assembly that stops models from making things up.",
-    priceLabel: "₹799",
+    priceLabel: "Free",
     hours: "5h 10m",
     outcomes: [
       "Chunk and embed a corpus without destroying meaning",
@@ -52,7 +55,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Models that plan, use tools, and act.",
     blurb:
       "Move beyond single prompts to agents that reason, call tools, and recover from failure — with the guardrails that keep them safe and affordable.",
-    priceLabel: "₹999",
+    priceLabel: "Free",
     hours: "6h 05m",
     outcomes: [
       "Design the reason → act → observe loop",
@@ -73,7 +76,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "The core ideas everything else is built on.",
     blurb:
       "The mental models behind every ML system — features, training, generalisation, and evaluation — taught with intuition first and just enough math.",
-    priceLabel: "₹699",
+    priceLabel: "Free",
     hours: "5h 40m",
     outcomes: [
       "Frame a problem as supervised learning",
@@ -94,7 +97,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Ship reliable products on top of language models.",
     blurb:
       "The engineering around the model: structured outputs, streaming, context windows, caching, and the failure handling that turns a demo into a product.",
-    priceLabel: "₹899",
+    priceLabel: "Free",
     hours: "5h 25m",
     outcomes: [
       "Get structured, validated output every time",
@@ -115,8 +118,9 @@ export const COURSES: CourseMeta[] = [
     tagline: "Make prompts a controlled variable, not a guess.",
     blurb:
       "Treat prompts like code: patterns that work, why they work, and the evaluation loop that turns 'it felt better' into a number you can defend.",
-    priceLabel: "₹499",
+    priceLabel: "Free",
     hours: "4h 15m",
+    starter: true,
     outcomes: [
       "Apply reliable prompting patterns",
       "Use few-shot examples effectively",
@@ -136,7 +140,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "The retrieval engine under every AI app.",
     blurb:
       "How embeddings and vector databases actually work — distance metrics, indexes, hybrid search, and the metadata filtering that makes results usable.",
-    priceLabel: "₹699",
+    priceLabel: "Free",
     hours: "4h 50m",
     outcomes: [
       "Choose an embedding model and metric",
@@ -157,7 +161,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Teach a base model your task and voice.",
     blurb:
       "When to fine-tune versus prompt or retrieve, how LoRA makes it cheap, and how to build the dataset that actually moves the needle.",
-    priceLabel: "₹999",
+    priceLabel: "Free",
     hours: "5h 00m",
     outcomes: [
       "Decide fine-tune vs RAG vs prompt",
@@ -178,7 +182,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Get models to production and keep them healthy.",
     blurb:
       "Packaging, serving, versioning, and monitoring models in production — plus the drift detection that tells you when reality has moved on.",
-    priceLabel: "₹899",
+    priceLabel: "Free",
     hours: "5h 30m",
     outcomes: [
       "Serve a model behind a stable API",
@@ -199,7 +203,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "How neural networks actually learn.",
     blurb:
       "Neurons, layers, backpropagation, and the transformer — the intuition behind the architecture that powers modern AI, without drowning in notation.",
-    priceLabel: "₹799",
+    priceLabel: "Free",
     hours: "6h 10m",
     outcomes: [
       "Understand neurons, layers, and activations",
@@ -220,7 +224,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Turn a model into something people pay for.",
     blurb:
       "The product craft around AI: scoping to the model's strengths, designing for uncertainty, keeping humans in the loop, and earning trust.",
-    priceLabel: "₹599",
+    priceLabel: "Free",
     hours: "4h 40m",
     outcomes: [
       "Scope features to what models do well",
@@ -245,6 +249,11 @@ export function getCourseMeta(courseId: string): CourseMeta {
 
 export function getAllCourses(): CourseMeta[] {
   return COURSES;
+}
+
+/** The designated entry course (cheapest, flagged) used by the hero CTA. */
+export function getStarterCourse(): CourseMeta {
+  return COURSES.find((c) => c.starter) ?? COURSES[0]!;
 }
 
 export function courseIds(): string[] {

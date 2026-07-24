@@ -8,25 +8,47 @@
  */
 import { z } from "zod";
 
-const EnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().positive().default(8080),
+const EnvSchema = z
+  .object({
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    PORT: z.coerce.number().int().positive().default(8080),
 
-  // Data
-  MONGODB_URI: z.string().url(),
+    // Data
+    MONGODB_URI: z.string().url(),
 
-  // Auth (docs/01 §2.2)
-  JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
-  JWT_EXPIRES_IN: z.string().default("15m"),
+    // Auth (docs/01 §2.2)
+    JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
+    JWT_EXPIRES_IN: z.string().default("15m"),
 
-  // Payments (docs/01 §2.3)
-  RAZORPAY_KEY_ID: z.string().min(1),
-  RAZORPAY_KEY_SECRET: z.string().min(1),
-  RAZORPAY_WEBHOOK_SECRET: z.string().min(1),
+    // Access model (docs/04 §0a). Free by default: every catalog course is open
+    // to any signed-in user and the payment surface is not mounted. Set
+    // FREE_ACCESS=false to restore the paid Razorpay flow.
+    FREE_ACCESS: z
+      .string()
+      .optional()
+      .transform((v) => v !== "false"),
 
-  // Security (docs/01 §2.4) — restrict CORS to the known frontend origin.
-  CORS_ORIGIN: z.string().url(),
-});
+    // Payments (docs/01 §2.3) — required only when FREE_ACCESS is false.
+    RAZORPAY_KEY_ID: z.string().min(1).optional(),
+    RAZORPAY_KEY_SECRET: z.string().min(1).optional(),
+    RAZORPAY_WEBHOOK_SECRET: z.string().min(1).optional(),
+
+    // Security (docs/01 §2.4) — restrict CORS to the known frontend origin.
+    CORS_ORIGIN: z.string().url(),
+  })
+  .superRefine((cfg, ctx) => {
+    // Fail fast (docs/01 §2.1): a paid deployment must carry its payment keys.
+    if (cfg.FREE_ACCESS) return;
+    for (const key of ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET"] as const) {
+      if (!cfg[key]) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [key],
+          message: "is required when FREE_ACCESS is false",
+        });
+      }
+    }
+  });
 
 export type Env = z.infer<typeof EnvSchema>;
 
@@ -49,3 +71,6 @@ function loadEnv(): Env {
 export const env = loadEnv();
 
 export const isProd = env.NODE_ENV === "production";
+
+/** Every catalog course is open to any signed-in user (docs/04 §0a). */
+export const isFreeAccess = env.FREE_ACCESS;

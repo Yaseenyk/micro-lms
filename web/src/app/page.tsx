@@ -5,7 +5,7 @@ import { Reveal } from "@/components/Reveal";
 import { SectionLabel } from "@/components/SectionLabel";
 import { HeroGraphic } from "@/components/HeroGraphic";
 import { CourseCard } from "@/features/course/ui/CourseCard";
-import { getAllCourses } from "@/features/course/catalog";
+import { getAllCourses, getStarterCourse } from "@/features/course/catalog";
 import { CodeIcon, LayersIcon, RouteIcon, CheckIcon, ArrowRightIcon } from "@/components/Icons";
 
 const HOW = [
@@ -30,11 +30,12 @@ const FAQ = [
   { q: "Are these video courses?", a: "No — on purpose. Every lesson is detailed writing plus custom diagrams. You read at your own pace, search the text, and never scrub a timeline." },
   { q: "Do I need to be an ML expert?", a: "No. Courses start from intuition and build up. If you can write basic code and are curious about AI, you can follow along." },
   { q: "What topics are covered?", a: "Ten courses across the modern AI stack: RAG, agents, ML foundations, LLM engineering, prompting, vector search, fine-tuning, MLOps, deep learning, and AI products." },
-  { q: "Do I get lifetime access?", a: "Yes. Each course is a one-time purchase with lifetime access, including any lessons added to it later." },
+  { q: "Is it really free?", a: "Yes. Every course and every lesson is free right now, with no trial and no card required. An account exists only so your progress saves and resumes across devices." },
 ];
 
 export default function HomePage() {
   const courses = getAllCourses();
+  const starter = getStarterCourse();
 
   return (
     <Container>
@@ -60,17 +61,17 @@ export default function HomePage() {
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-4">
-            <ButtonLink href="/courses">
-              Browse courses
+            <ButtonLink href={`/course/${starter.id}`}>
+              Start reading free
               <ArrowRightIcon width={16} height={16} />
             </ButtonLink>
-            <ButtonLink href="/register" variant="ghost">
-              Create free account
+            <ButtonLink href="/courses" variant="ghost">
+              Browse all {courses.length} courses
             </ButtonLink>
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-zinc-500">
-            <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> {courses.length} AI courses</span>
+            <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> Every course free</span>
             <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> Detailed text + diagrams</span>
             <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> Lifetime access</span>
           </div>
@@ -159,19 +160,19 @@ export default function HomePage() {
           <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[36rem] -translate-x-1/2 rounded-full bg-cyan/10 blur-3xl" />
           <div className="relative">
             <h2 className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight text-zinc-50 sm:text-4xl">
-              Start with the <GradientText>first lesson</GradientText>.
+              Every course, <GradientText>free</GradientText>.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-zinc-400">
-              Create a free account and browse the catalog. Unlock any course whenever you&apos;re
-              ready.
+              No paywall and no trial. Create an account so your progress saves, then read
+              anything in the catalog.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-              <ButtonLink href="/register">
-                Start free
+              <ButtonLink href={`/course/${starter.id}`}>
+                Start with {starter.title}
                 <ArrowRightIcon width={16} height={16} />
               </ButtonLink>
               <ButtonLink href="/courses" variant="ghost">
-                Browse courses
+                Browse all {courses.length} courses
               </ButtonLink>
             </div>
           </div>

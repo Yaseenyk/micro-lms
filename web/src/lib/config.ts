@@ -23,5 +23,4 @@ function required(name: string, value: string | undefined): string {
 
 export const config = {
   apiUrl: required("NEXT_PUBLIC_API_URL", process.env.NEXT_PUBLIC_API_URL),
-  razorpayKeyId: required("NEXT_PUBLIC_RAZORPAY_KEY_ID", process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID),
 } as const;

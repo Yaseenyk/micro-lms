@@ -14,7 +14,13 @@ export function CourseCard({ course }: { course: CourseMeta }) {
     >
       <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-cyan/5 blur-3xl transition-opacity group-hover:bg-cyan/10" />
       <div className="flex items-center justify-between">
-        <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">Course</span>
+        {course.starter ? (
+          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
+            Start here
+          </span>
+        ) : (
+          <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">Course</span>
+        )}
         <span className="rounded-full border border-cyan/25 bg-cyan/[0.06] px-3 py-1 text-xs font-semibold text-ice">
           {course.priceLabel}
         </span>
