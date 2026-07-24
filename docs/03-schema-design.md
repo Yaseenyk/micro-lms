@@ -143,13 +143,27 @@ is the paid product — reads are gated by entitlement (doc 04 §7b).
 **Block** is a discriminated union rendered by the client:
 
 ```jsonc
-{ "type": "heading",   "text": "…" }
-{ "type": "paragraph", "text": "…" }          // supports `inline code` backtick spans
-{ "type": "list",      "items": ["…", "…"] }
-{ "type": "code",      "language": "ts", "code": "…" }
-{ "type": "callout",   "tone": "info|warn|success", "text": "…" }
-{ "type": "svg",       "svg": "<svg …>…</svg>", "caption": "…" }   // brand-styled diagram
+// prose
+{ "type": "heading",    "text": "…" }
+{ "type": "paragraph",  "text": "…" }   // inline `code`, **bold**, *italic* supported
+{ "type": "list",       "items": ["…", "…"] }
+{ "type": "code",       "language": "ts", "code": "…", "caption": "…" }
+{ "type": "callout",    "tone": "info|warn|success", "text": "…" }
+{ "type": "svg",        "svg": "<svg …>…</svg>", "caption": "…" }   // brand-styled diagram
+
+// course scaffolding — what makes a lesson teach rather than summarise
+{ "type": "objectives", "items": ["…"] }               // "What you'll learn", opens a lesson
+{ "type": "steps",      "items": ["…"] }               // ordered procedure
+{ "type": "exercise",   "title": "…", "text": "…", "hint": "…" }  // practice task
+{ "type": "summary",    "items": ["…"] }               // recap, closes a lesson
 ```
+
+**Lesson shape (enforced by review, not by code).** A paid lesson opens with
+`objectives`, develops the idea across several `heading`/`paragraph` sections
+with at least one worked `code` example and one `svg` diagram, names the common
+mistakes in `callout`s, gives the reader an `exercise`, and closes with a
+`summary`. A lesson that is only a handful of paragraphs is a blog post and
+does not ship.
 
 **Indexes**
 

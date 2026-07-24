@@ -9,6 +9,9 @@ import type { ContentBlock, LessonContentDomain } from "../domain/types.js";
 
 const TONES = new Set(["info", "warn", "success"]);
 
+const isStrArray = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.every((i) => typeof i === "string");
+
 function toBlock(raw: unknown): ContentBlock | null {
   if (!raw || typeof raw !== "object") return null;
   const b = raw as Record<string, unknown>;
@@ -18,15 +21,29 @@ function toBlock(raw: unknown): ContentBlock | null {
     case "paragraph":
       return typeof b.text === "string" ? { type: "paragraph", text: b.text } : null;
     case "list":
-      return Array.isArray(b.items) && b.items.every((i) => typeof i === "string")
-        ? { type: "list", items: b.items as string[] }
-        : null;
+      return isStrArray(b.items) ? { type: "list", items: b.items } : null;
     case "code":
       return typeof b.code === "string"
         ? {
             type: "code",
             code: b.code,
             ...(typeof b.language === "string" ? { language: b.language } : {}),
+            ...(typeof b.caption === "string" ? { caption: b.caption } : {}),
+          }
+        : null;
+    case "objectives":
+      return isStrArray(b.items) ? { type: "objectives", items: b.items } : null;
+    case "steps":
+      return isStrArray(b.items) ? { type: "steps", items: b.items } : null;
+    case "summary":
+      return isStrArray(b.items) ? { type: "summary", items: b.items } : null;
+    case "exercise":
+      return typeof b.text === "string"
+        ? {
+            type: "exercise",
+            text: b.text,
+            ...(typeof b.title === "string" ? { title: b.title } : {}),
+            ...(typeof b.hint === "string" ? { hint: b.hint } : {}),
           }
         : null;
     case "callout":

@@ -12,11 +12,26 @@ type B = ContentBlock;
 const h = (text: string): B => ({ type: "heading", text });
 const p = (text: string): B => ({ type: "paragraph", text });
 const ul = (items: string[]): B => ({ type: "list", items });
-const code = (language: string, src: string): B => ({ type: "code", language, code: src });
+const code = (language: string, src: string, caption?: string): B => ({
+  type: "code",
+  language,
+  code: src,
+  ...(caption ? { caption } : {}),
+});
 const info = (text: string): B => ({ type: "callout", tone: "info", text });
 const warn = (text: string): B => ({ type: "callout", tone: "warn", text });
 const win = (text: string): B => ({ type: "callout", tone: "success", text });
 const fig = (name: keyof typeof SVGS, caption: string): B => ({ type: "svg", svg: svg(name), caption });
+// Course scaffolding — what turns a summary into a lesson (docs/03 §4).
+const obj = (items: string[]): B => ({ type: "objectives", items });
+const steps = (items: string[]): B => ({ type: "steps", items });
+const sum = (items: string[]): B => ({ type: "summary", items });
+const ex = (title: string, text: string, hint?: string): B => ({
+  type: "exercise",
+  title,
+  text,
+  ...(hint ? { hint } : {}),
+});
 
 export interface SeedLesson {
   id: string;
@@ -56,11 +71,82 @@ export const COURSES: SeedCourse[] = [
         title: "Why RAG beats a bigger prompt",
         minutes: 22,
         blocks: [
-          p("A language model only knows what it was trained on and what you put in the prompt. RAG is the discipline of putting the *right* few paragraphs in the prompt at query time — retrieved from your data — so the model answers from facts instead of memory."),
+          obj([
+            "Explain what a model can and cannot know at inference time",
+            "Compare the three ways to give a model knowledge, and when each wins",
+            "Trace the four steps every RAG system performs",
+            "Recognise the cases where RAG is the wrong tool",
+          ]),
+          p("A language model knows two things: what it absorbed during training, and what you put in the prompt. That is the whole universe. It has no connection to your database, your wiki, or last Tuesday's incident report unless you hand that text over at query time."),
+          p("So when someone asks your assistant *what is our refund window for enterprise plans*, the model has three possible fates. It can know the answer from training data (unlikely, and impossible for private data). It can be handed the answer in the prompt. Or it can invent something plausible. The third outcome is what people call hallucination, and it is not a bug in the model. It is the predictable result of asking a question the prompt did not contain the answer to."),
+          h("Three ways to give a model knowledge"),
+          p("Before reaching for retrieval, it is worth knowing the alternatives, because each solves a genuinely different problem."),
+          ul([
+            "**Fine-tuning** bakes behaviour into the weights. Excellent for teaching *form* — tone, output format, a specialised skill. Poor for teaching *facts*: it is slow, expensive, and every content change means retraining.",
+            "**Long context** pastes everything into the prompt. Simple, and increasingly viable as windows grow. But you pay for every token on every call, and quality degrades as the window fills.",
+            "**Retrieval (RAG)** fetches only the few passages that matter, per question. Cheap, updatable the moment your data changes, and auditable because you know exactly what the model was shown.",
+          ]),
+          win("Facts change, so retrieve them. Behaviour is stable, so train it. Teams that fine-tune for knowledge end up retraining forever."),
           h("The core loop"),
-          p("Every RAG system is the same four steps: embed the question, search a vector store for the closest chunks, stuff those chunks into the prompt, and let the model answer. The art is in each step, not the shape."),
-          fig("retrieval", "The retrieval loop: query → vector store → top-k → LLM"),
-          info("Rule of thumb: if the answer exists in three sentences somewhere in your corpus, RAG should find and quote those three sentences — not summarise the whole document."),
+          p("Every RAG system, from a weekend prototype to a platform serving millions, performs the same four steps. The sophistication lives inside each step, never in the shape."),
+          steps([
+            "**Embed the question** into a vector that represents its meaning.",
+            "**Search** a vector store for the chunks whose vectors sit closest to it.",
+            "**Assemble** a prompt containing those chunks plus the original question.",
+            "**Generate** the answer, constrained to the supplied context.",
+          ]),
+          fig("retrieval", "The retrieval loop: query, vector store, top-k, model"),
+          p("Here is that entire loop with nothing hidden. Roughly fifteen lines is genuinely all it takes to get a working baseline, and you should build this before adding a framework."),
+          code(
+            "ts",
+            `async function answer(question: string) {
+  // 1. embed the question
+  const qVec = await embed(question);
+
+  // 2. nearest neighbours from the store
+  const chunks = await store.search(qVec, { topK: 5 });
+
+  // 3. assemble a grounded prompt
+  const context = chunks
+    .map((c, i) => "[" + (i + 1) + "] " + c.text)
+    .join("\\n\\n");
+
+  // 4. generate, constrained to that context
+  return llm.complete(
+    "Answer using ONLY the context below. Cite sources as [n].\\n\\n" +
+    "Context:\\n" + context + "\\n\\nQuestion: " + question
+  );
+}`,
+            "A complete RAG pipeline. Every production system is this, with each step hardened.",
+          ),
+          h("Why not just paste everything?"),
+          p("Context windows keep growing, so the obvious question is why bother retrieving at all. Four reasons, and only the first is about size."),
+          ul([
+            "**Cost and latency scale with every token, on every call.** Sending a 200-page handbook to answer *what is the refund window* means paying for 200 pages to use three sentences, on every single request.",
+            "**Attention degrades with length.** Models reliably attend to the start and end of a long context and get measurably worse at material buried in the middle. More context can mean *worse* answers.",
+            "**Corpora outgrow any window.** A company wiki is hundreds of megabytes. No window is large enough, and it changes daily.",
+            "**Auditability.** With retrieval you know precisely which passages produced an answer. That is the difference between a demo and something legal will sign off on.",
+          ]),
+          warn("RAG is not a fix for bad source material. If your documentation is contradictory or stale, retrieval will faithfully find the contradictions and the model will confidently repeat them. Garbage in, cited garbage out."),
+          h("When RAG is the wrong tool"),
+          p("Reaching for retrieval reflexively is its own failure mode. Skip it when the question does not need a lookup."),
+          ul([
+            "The task is transformation, not recall — summarise this text, translate this, rewrite this email. The content is already in the prompt.",
+            "The answer needs computation or a live system call. That is a tool call or a database query, not a similarity search.",
+            "The corpus is genuinely tiny and stable. Ten paragraphs that never change belong in the system prompt.",
+          ]),
+          ex(
+            "Your turn",
+            "Take a question your own product or team gets asked constantly. Write down: (a) where the answer actually lives today, (b) how many sentences are genuinely needed to answer it, and (c) how often that source changes. Then decide, with a reason, whether it calls for retrieval, long context, or fine-tuning.",
+            "If the answer changes more often than you would want to retrain, and it lives somewhere searchable, you are describing a retrieval problem.",
+          ),
+          sum([
+            "A model knows only its training data plus the prompt; everything else must be supplied at query time.",
+            "Retrieve facts, fine-tune behaviour, and use long context when the material is small and already at hand.",
+            "Every RAG system is embed, search, assemble, generate — the craft is inside those steps.",
+            "Retrieval beats a bigger prompt on cost, on attention quality, on scale, and on auditability.",
+            "Retrieval cannot rescue a corpus that is wrong; fix the source before blaming the pipeline.",
+          ]),
         ],
       },
       {
@@ -68,15 +154,109 @@ export const COURSES: SeedCourse[] = [
         title: "Chunking without destroying meaning",
         minutes: 26,
         blocks: [
-          p("Retrieval works on chunks, so how you split documents decides your ceiling. Split too big and you drown the answer in noise; split too small and you sever the context a sentence needs to make sense."),
-          h("Practical defaults"),
-          ul([
-            "Prefer semantic boundaries (headings, paragraphs) over a fixed character count.",
-            "Overlap chunks by ~10–15% so a fact split across a boundary survives.",
-            "Attach metadata (source, section, updatedAt) to every chunk — you'll filter on it later.",
+          obj([
+            "Explain why chunk size sets the ceiling on retrieval quality",
+            "Choose between fixed, recursive, and structural splitting",
+            "Apply overlap and metadata correctly",
+            "Diagnose the two failure modes: noise and severed context",
           ]),
-          code("ts", "function chunk(doc, size = 800, overlap = 120) {\n  const out = [];\n  for (let i = 0; i < doc.length; i += size - overlap)\n    out.push(doc.slice(i, i + size));\n  return out;\n}"),
-          warn("Never chunk across unrelated documents. A chunk should always belong to exactly one source so citations stay honest."),
+          p("Your system never retrieves documents. It retrieves *chunks*. Every embedding, every similarity score, every passage the model finally reads is a chunk you created. Which means chunking is not preprocessing — it is the single decision that caps how good your retrieval can ever be."),
+          p("Get it wrong and no amount of reranking, prompt engineering, or model upgrading recovers the loss. The right sentence simply is not retrievable, because it no longer exists as a coherent unit."),
+          h("The two failure modes"),
+          p("Chunking pulls in two opposite directions, and both extremes fail in ways that are easy to misdiagnose as model problems."),
+          ul([
+            "**Chunks too large.** The embedding becomes an average of many topics, so it sits in the middle of everything and is strongly similar to nothing. You retrieve a ten-page section to answer a one-line question, and the model has to find the needle you failed to find.",
+            "**Chunks too small.** You sever the context a sentence needs. *It expires after 30 days* is useless when the sentence naming what *it* is landed in the previous chunk.",
+          ]),
+          info("A useful mental test: could a colleague answer the question if you handed them this chunk and nothing else? If not, the chunk is wrong, regardless of its character count."),
+          h("Three strategies, in order of preference"),
+          p("These are not equally good. Reach for the last one first and fall back only when the format forces you to."),
+          ul([
+            "**Structural splitting.** Split on the document's own boundaries — headings, sections, list items, function definitions. The author already grouped related ideas; inherit their work.",
+            "**Recursive splitting.** Try to split on paragraphs; if a piece is still too big, split on sentences; then on words. Preserves as much natural structure as fits the budget.",
+            "**Fixed-size splitting.** Cut every N characters. Fast, format-agnostic, and blind. It will cut mid-sentence and mid-table. Use it only as a last resort.",
+          ]),
+          fig("funnel", "A corpus narrowed to the few chunks that answer one question"),
+          h("A practical recipe"),
+          steps([
+            "Split on the largest structural boundary the format offers (heading, section, article).",
+            "If a piece exceeds your budget, split it recursively on paragraphs, then sentences.",
+            "Add roughly 10 to 15 percent overlap so a fact straddling a boundary survives in one of the two chunks.",
+            "Attach metadata to every chunk: source id, title, section path, and last-updated date.",
+            "Never let a chunk span two source documents.",
+          ]),
+          p("The naive implementation everyone starts with looks like this — and it is worth seeing precisely why it is inadequate."),
+          code(
+            "ts",
+            `// Naive: fast, format-blind, cuts mid-sentence.
+function chunkFixed(doc: string, size = 800, overlap = 120) {
+  const out: string[] = [];
+  for (let i = 0; i < doc.length; i += size - overlap) {
+    out.push(doc.slice(i, i + size));
+  }
+  return out;
+}`,
+            "Works, but it will happily cut a sentence, a code block, or a table in half.",
+          ),
+          p("The version worth shipping respects structure first and only falls back to slicing when a section genuinely exceeds the budget. Note that it carries metadata through — that is not a detail, it is half the value."),
+          code(
+            "ts",
+            `interface Chunk {
+  text: string;
+  sourceId: string;
+  section: string;
+  updatedAt: string;
+}
+
+function chunkDoc(doc: Doc, max = 800, overlap = 120): Chunk[] {
+  const out: Chunk[] = [];
+
+  // 1. structural: the author's own sections
+  for (const section of doc.sections) {
+    const base = {
+      sourceId: doc.id,
+      section: section.heading,
+      updatedAt: doc.updatedAt,
+    };
+
+    if (section.text.length <= max) {
+      out.push({ text: section.text, ...base });
+      continue;
+    }
+
+    // 2. recursive: paragraphs, packed up to the budget
+    let buf = "";
+    for (const para of section.text.split(/\\n\\s*\\n/)) {
+      if ((buf + para).length > max && buf) {
+        out.push({ text: buf.trim(), ...base });
+        buf = buf.slice(-overlap); // 3. carry overlap forward
+      }
+      buf += para + "\\n\\n";
+    }
+    if (buf.trim()) out.push({ text: buf.trim(), ...base });
+  }
+
+  return out;
+}`,
+            "Structure first, recursion as fallback, overlap carried forward, metadata attached throughout.",
+          ),
+          h("Metadata is half the value"),
+          p("Teams obsess over chunk size and forget metadata, then discover they cannot filter results by tenant, language, or recency — and cannot cite a source, because the chunk no longer knows where it came from."),
+          p("Every chunk should be able to answer three questions about itself: where did I come from, which part of that document am I, and how fresh am I? Those fields power citations, permission filtering, and the ability to prefer recent material over stale material."),
+          warn("Never let a chunk span two documents. It corrupts citations (which source do you attribute?) and creates embeddings representing a blend of unrelated ideas that will surface for the wrong queries."),
+          ex(
+            "Your turn",
+            "Take one real document — a README, a policy page, a wiki article. Chunk it by hand at roughly 800 characters using structural boundaries. Now write down three questions a user would genuinely ask of it, and check whether any single chunk fully answers each one. Every question that no chunk can answer alone is a chunking bug you just found before your users did.",
+            "Questions that span sections are the interesting ones. They usually mean your boundary is one level too fine, or that the answer needs two chunks retrieved together.",
+          ),
+          sum([
+            "Retrieval operates on chunks, so chunking sets the ceiling on everything downstream.",
+            "Too large blurs the embedding into meaning nothing; too small severs the context a sentence depends on.",
+            "Prefer structural boundaries, fall back to recursive splitting, and treat fixed-size as a last resort.",
+            "Overlap by 10 to 15 percent so facts on a boundary survive.",
+            "Carry source, section, and freshness metadata on every chunk — it powers citations and filtering.",
+            "A chunk must belong to exactly one document.",
+          ]),
         ],
       },
       {
@@ -84,11 +264,88 @@ export const COURSES: SeedCourse[] = [
         title: "Embeddings and vector search",
         minutes: 31,
         blocks: [
-          p("An embedding turns text into a vector so that similar meanings land near each other. Retrieval is then just nearest-neighbour search in that space."),
-          fig("vectors", "Similar meanings cluster; retrieval finds the nearest neighbours to the query"),
-          h("Dense isn't always enough"),
-          p("Dense (embedding) search understands meaning but misses exact terms like error codes or product SKUs. Keyword (BM25) search nails exact terms but misses paraphrase. Hybrid search runs both and fuses the ranks — it is the reliable default."),
-          info("Start dense-only to ship, then add keyword + reciprocal-rank fusion the first time a user complains that an exact term wasn't found."),
+          obj([
+            "Describe what an embedding actually represents",
+            "Pick the right similarity metric and embedding model",
+            "Explain why dense search alone misses exact terms",
+            "Combine dense and keyword search with rank fusion",
+          ]),
+          p("An embedding converts text into a list of numbers — a vector — positioned so that texts with similar meaning land near each other. *Cancel my subscription* and *how do I end my plan* share almost no words, yet their vectors are neighbours. That is the entire trick, and it is what lets retrieval work on meaning rather than string matching."),
+          p("Once text is vectors, search becomes geometry. Finding relevant passages means finding the points nearest to the question's point."),
+          fig("vectors", "Related meanings cluster; retrieval returns the query's nearest neighbours"),
+          h("Measuring closeness"),
+          p("Nearly all text embeddings are compared with **cosine similarity**, which measures the angle between two vectors while ignoring their length. Direction carries the meaning; magnitude mostly reflects text length, which you do not want to rank on."),
+          code(
+            "ts",
+            `function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+// 1.0 = identical direction, 0 = unrelated, -1 = opposite.`,
+            "If your vectors are already normalised, a plain dot product gives the same ranking for less work.",
+          ),
+          info("Use whichever metric your embedding model was trained with. Most modern text models expect cosine. Mismatching the metric quietly degrades every result without ever throwing an error."),
+          h("Choosing an embedding model"),
+          p("Model choice is a real trade-off, not a detail to default past. Four things matter."),
+          ul([
+            "**Dimensions.** More dimensions can capture more nuance but cost more memory and slower search. 768 to 1536 is the common sweet spot.",
+            "**Max input length.** If the model truncates at 512 tokens, chunks longer than that are silently cut — and you will never be told.",
+            "**Domain fit.** A general model may not separate specialised jargon well. Test on *your* content, not a benchmark.",
+            "**Cost and latency.** You embed the whole corpus once, but every single query embeds too, on the hot path.",
+          ]),
+          warn("Never mix embeddings from two different models in one index. Their vector spaces are unrelated, so the distances between them are meaningless — and it fails silently, returning confident nonsense. Changing models means re-embedding everything."),
+          h("Where dense search fails"),
+          p("Embeddings understand meaning, which is exactly why they are bad at *literals*. A user searching for error code `ERR_2043`, a SKU, or a specific function name wants an exact match. Semantically, `ERR_2043` and `ERR_2044` are nearly identical — the embedding cannot tell them apart, but your user very much can."),
+          p("Keyword search (BM25) has the mirror-image profile: perfect on exact tokens, useless on paraphrase. It will never connect *cancel my subscription* to *end my plan*."),
+          ul([
+            "**Dense (embeddings)** — strong on meaning and paraphrase, weak on exact identifiers.",
+            "**Sparse (BM25 keyword)** — strong on exact terms and rare words, blind to synonyms.",
+            "**Hybrid** — run both, fuse the rankings. Reliably better than either alone.",
+          ]),
+          h("Fusing two rankings"),
+          p("The standard way to merge is Reciprocal Rank Fusion. It uses only each result's *position* in each list, so you never have to reconcile a cosine score with a BM25 score — two numbers on incomparable scales."),
+          code(
+            "ts",
+            `function reciprocalRankFusion(lists: string[][], k = 60) {
+  const scores = new Map<string, number>();
+
+  for (const list of lists) {
+    list.forEach((id, rank) => {
+      // rank is 0-based; earlier positions contribute more
+      scores.set(id, (scores.get(id) ?? 0) + 1 / (k + rank + 1));
+    });
+  }
+
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id);
+}
+
+const fused = reciprocalRankFusion([denseResults, keywordResults]);`,
+            "Documents ranked highly by both retrievers rise to the top; k dampens the influence of any single list.",
+          ),
+          h("Approximate search and recall"),
+          p("Exact nearest-neighbour search over millions of vectors is too slow, so vector databases use approximate indexes such as HNSW. They trade a small amount of accuracy for enormous speed, and that trade is tunable at query time."),
+          p("The number that matters is **recall**: of the truly nearest results, how many did the index actually return? Measure it once against a brute-force baseline on a sample. If recall is 80 percent, one in five relevant passages is invisible to your model, and no prompt engineering will bring it back."),
+          win("Default your index toward recall over raw speed. Saving 20ms is worthless if the answer was in the chunk you skipped."),
+          ex(
+            "Your turn",
+            "Write ten questions real users would ask of your corpus. Deliberately include two containing an exact identifier — an error code, a product name, a config key. Run all ten through dense-only search and note which fail. Those failures are precisely the ones hybrid search exists to fix.",
+            "The literal-identifier questions are the ones that break. If they retrieve near-miss neighbours (ERR_2044 instead of ERR_2043), you have just reproduced the classic dense-search failure.",
+          ),
+          sum([
+            "An embedding places text in a space where distance approximates difference in meaning.",
+            "Cosine similarity is the usual metric; always match what the model was trained with.",
+            "Choose a model on dimensions, max input length, domain fit, and query-time cost.",
+            "Never mix models in one index — the spaces are unrelated and it fails silently.",
+            "Dense search misses exact identifiers; keyword search misses paraphrase; hybrid plus rank fusion beats both.",
+            "Measure recall against a brute-force baseline, and tune the index toward recall.",
+          ]),
         ],
       },
       {
@@ -96,11 +353,89 @@ export const COURSES: SeedCourse[] = [
         title: "Grounding, citations, and evals",
         minutes: 28,
         blocks: [
-          p("Retrieval that finds the right chunk is worthless if the prompt lets the model ignore it. Grounding is a prompt contract: answer only from the provided context, and cite the chunk you used."),
-          code("ts", "const prompt = `Answer using ONLY the context below.\nIf the context is insufficient, say so.\nCite sources as [n].\n\nContext:\n${chunks.map((c,i)=>`[${i+1}] ${c.text}`).join('\\n')}\n\nQuestion: ${q}`;"),
-          h("Measure what matters"),
-          p("Track two numbers: retrieval hit-rate (did the right chunk make the top-k?) and faithfulness (did the answer stay inside the context?). A drop in the first is a search problem; a drop in the second is a prompt problem."),
-          win("Ship an eval set of 30 real questions before you tune anything. Without it, every 'improvement' is a guess."),
+          obj([
+            "Write a prompt that constrains the model to its retrieved context",
+            "Produce citations users can actually verify",
+            "Measure retrieval hit-rate and faithfulness separately",
+            "Diagnose which stage of the pipeline a failure came from",
+          ]),
+          p("Perfect retrieval still produces wrong answers if the prompt lets the model wander. Handed five relevant chunks, a model will cheerfully blend them with its training data, fill gaps with plausible invention, and present the mixture in one confident voice. Grounding is the contract that stops it."),
+          h("The grounding contract"),
+          p("A grounding prompt makes three demands: answer only from the supplied context, admit when the context is insufficient, and cite which passage each claim came from. The third is what makes the first two verifiable."),
+          code(
+            "ts",
+            `function buildPrompt(chunks: Chunk[], question: string) {
+  const context = chunks
+    .map((c, i) => "[" + (i + 1) + "] (" + c.section + ")\\n" + c.text)
+    .join("\\n\\n");
+
+  return [
+    "Answer the question using ONLY the context below.",
+    "If the context does not contain the answer, reply exactly:",
+    '"I could not find this in the available documents."',
+    "Cite the passage number for every claim, like [2].",
+    "Do not use prior knowledge. Do not guess.",
+    "",
+    "Context:",
+    context,
+    "",
+    "Question: " + question,
+  ].join("\\n");
+}`,
+            "The explicit refusal string matters: without a sanctioned way to say 'I do not know', a model will invent.",
+          ),
+          info("Give the model a specific, permitted failure response. Models invent partly because nothing in the prompt authorises them to decline."),
+          h("Citations users can verify"),
+          p("A citation is only worth something if a reader can follow it back. `[2]` alone is decoration. Map each number to the source title, section, and a link, then render them under the answer. This is also your fastest debugging tool: when an answer is wrong you can see instantly whether retrieval fetched the wrong passage or the model misread the right one."),
+          warn("Never let the model invent citation numbers. Validate that every [n] it emitted actually exists in what you supplied, and strip or flag any that do not. Fabricated citations are worse than none — they look trustworthy."),
+          h("The two numbers that matter"),
+          p("Most teams track one vague sense of 'quality' and cannot act on it. Split it in two, because each points at a different stage and a different fix."),
+          ul([
+            "**Retrieval hit-rate.** Of the questions where the answer genuinely exists in the corpus, how often did the correct chunk appear in the top-k? This grades chunking, embeddings, and search.",
+            "**Faithfulness.** Of the answers produced, how many stayed strictly inside the retrieved context? This grades the prompt and the model.",
+          ]),
+          p("The diagnosis follows mechanically. Hit-rate is low: fix chunking, the embedding model, or add hybrid search. Hit-rate is fine but faithfulness is low: tighten the grounding prompt. Both fine but users are still unhappy: your corpus does not contain the answers, and no pipeline change will help."),
+          fig("evalloop", "Prompt, output, score, refine — the loop that replaces guesswork"),
+          h("Building the eval set"),
+          p("An eval set is a fixed list of questions with known-good expectations. Thirty real questions, drawn from actual user requests, is enough to catch most regressions. Build it *before* you start tuning, or every change is a guess and you will optimise for whatever you happened to test by hand."),
+          steps([
+            "Collect 30 real questions users have actually asked.",
+            "For each, record which chunk or document truly contains the answer.",
+            "Run retrieval and score hit-rate: was that chunk in the top-k?",
+            "Run generation and score faithfulness: is every claim supported by a cited passage?",
+            "Re-run the whole set on every prompt, model, or chunking change.",
+          ]),
+          code(
+            "ts",
+            `interface EvalCase {
+  question: string;
+  expectedChunkId: string;
+}
+
+async function scoreRetrieval(cases: EvalCase[], k = 5) {
+  let hits = 0;
+  for (const c of cases) {
+    const results = await search(c.question, { topK: k });
+    if (results.some((r) => r.id === c.expectedChunkId)) hits++;
+  }
+  return hits / cases.length; // hit-rate @k
+}`,
+            "Retrieval scoring needs no model calls, so it is cheap enough to run on every commit.",
+          ),
+          p("Faithfulness is harder to score automatically because it is a judgement about open text. A second model can grade it against a tight rubric — *is every claim in this answer supported by the cited passage, yes or no* — which is far cheaper than human review. Spot-check the judge against your own labels occasionally to keep it honest."),
+          win("Score retrieval on every commit, and faithfulness before every release. The first is nearly free; the second is what protects your users."),
+          ex(
+            "Your turn",
+            "Build a ten-case eval set for a corpus you have. For each question, note the document that truly answers it. Run your retrieval and compute hit-rate at k=5. Then change one variable — chunk size, or top-k — and re-run. You now have the smallest possible version of the loop every serious RAG team runs.",
+            "If hit-rate is already 100 percent on ten cases, your questions are too easy. Add the ambiguous, multi-part ones real users actually ask.",
+          ),
+          sum([
+            "Retrieval alone does not prevent invention; the prompt must forbid it and authorise a refusal.",
+            "Citations must be verifiable and validated — never let the model invent a passage number.",
+            "Track retrieval hit-rate and faithfulness separately; each blames a different stage.",
+            "Low hit-rate means fix search; low faithfulness means fix the prompt; both healthy means fix the corpus.",
+            "Build a 30-question eval set before tuning, or every improvement is a guess.",
+          ]),
         ],
       },
     ],
