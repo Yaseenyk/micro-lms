@@ -175,10 +175,10 @@ export const COURSES: CourseMeta[] = [
       "Evaluate fine-tunes and catch regressions",
     ],
     lessons: [
-      // Module 1 authored; les_2–4 hold provisional topics until their modules land.
+      // Modules 1–2 authored; les_3–4 hold provisional topics until their modules land.
       L("les_1", "The Data Engine: Curation & Formatting", 54),
-      L("les_2", "Supervised Fine-Tuning: The Training Loop", 50),
-      L("les_3", "Alignment: RLHF, DPO & Preference Optimization", 54),
+      L("les_2", "Supervised Fine-Tuning & Direct Preference Optimization", 54),
+      L("les_3", "Advanced Alignment: RLHF, RLAIF & Reasoning", 54),
       L("les_4", "Evaluating Fine-Tunes & Preventing Regressions", 48),
     ],
   },
