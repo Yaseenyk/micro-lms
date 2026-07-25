@@ -1,0 +1,886 @@
+---
+course: agentic-ai
+module: 3
+title: "Memory & State Management"
+summary: "How an agent remembers: the working scratchpad versus long-term episodic and semantic memory, checkpointing an agent run as a resumable process, the serialization-adapter pattern that keeps MongoDB from drowning in raw LLM objects, context-window compaction that survives the token limit, and modelling the whole thing as a cyclic state graph."
+readingMinutes: 52
+---
+
+# Memory & State Management
+
+Everything we have built so far has a goldfish problem. In Module 1 we said the
+transcript *is* the state — the model is stateless, and the entire memory of an
+agent is the message array you resend on every turn. In Module 2 we gave that
+loop hands: tool calls, results, error observations, all appended to the same
+growing transcript. It works beautifully for a five-turn task.
+
+Then the transcript hits the context limit and the agent forgets the first thing
+you told it. Or the process crashes at step 40 of a 60-step migration and you
+start over from zero. Or you save the message array to a database after every
+step and watch your MongoDB collection balloon to gigabytes because you stored
+the same growing transcript sixty times.
+
+This module is about memory that outlives a single request. Four things:
+
+- **Short-term vs. long-term memory** — the in-context scratchpad versus
+  episodic and semantic memory in a vector store, and the mechanics of an agent
+  *deciding* to save a memory versus search for one.
+- **State persistence & checkpointing** — treating an agent run as a resumable
+  background process, with pause/resume and time-travel debugging. The core
+  skill here is the **serialization adapter**: stripping bloated raw LLM message
+  objects down to lean state records before they touch the database.
+- **Context-window management** — what to do when the scratchpad hits the token
+  limit: rolling windows, eviction, and semantic summarization *without* losing
+  the system prompt or the tool output you're about to act on.
+- **Graph-based state machines** — the leap from "an agent is a linear array of
+  messages" to "an agent is a cyclic graph," where typed state flows between
+  nodes, merges through reducers, and is checkpointed at every step.
+
+By the end you should be able to run an agent overnight, kill it, and bring it
+back exactly where it was — without a bloated database or a lost system prompt.
+
+---
+
+## 3.1 — Short-Term vs. Long-Term Memory
+
+### Two memories, two physics
+
+An agent has two fundamentally different kinds of memory, and conflating them is
+the root of most "why did it forget?" bugs.
+
+**Short-term memory is the scratchpad** — the in-context message array. It holds
+the current task: the user's request, the model's reasoning, tool calls, tool
+results. It is *fast* (already in context, zero retrieval latency), *exact* (the
+model sees the literal bytes), and *ordered* (recency is preserved). It is also
+**bounded** (it must fit the context window) and **ephemeral** (it vanishes when
+the run ends).
+
+**Long-term memory is a store outside the context** — almost always a vector
+database. It holds what should survive a single run: past interactions, learned
+facts, user preferences. It is *unbounded* and *persistent*, but it is **lossy**
+— you cannot fit it all in context, so you *retrieve* the relevant slice, and
+retrieval can miss. This is not a new problem. **Long-term memory is RAG pointed
+at the agent's own history** — everything from Course 2 (chunking, embeddings,
+hybrid retrieval, re-ranking) applies unchanged.
+
+| | Short-term (scratchpad) | Long-term (vector store) |
+| --- | --- | --- |
+| Lives in | The context window | A database outside context |
+| Access | Free — already in context | Retrieval (embed query → search) |
+| Fidelity | Exact bytes, ordered | Approximate, recall-limited |
+| Capacity | Bounded by token limit | Effectively unbounded |
+| Lifetime | One run | Across runs / sessions / users |
+| Failure mode | Overflow → eviction (3.3) | Missed retrieval, stale facts |
+| Analogy | What you're holding in your head | What you wrote in a notebook |
+
+### Episodic vs. semantic vs. procedural
+
+Long-term memory itself splits by *what* it stores — a distinction borrowed
+straight from cognitive science, and a useful one:
+
+- **Episodic memory** — specific past *events*. "On July 3rd the user asked to
+  cancel order #8812 and I issued a refund." Answers *what happened*. Stored as
+  discrete records, retrieved when a similar situation recurs.
+- **Semantic memory** — distilled *facts*, stripped of the episode that produced
+  them. "The user prefers metric units." "This customer is on the Enterprise
+  plan." Answers *what is true*. More compact, more reusable, more dangerous when
+  stale.
+- **Procedural memory** — *how* to do things. In practice this usually lives in
+  the system prompt or in skills (reusable instruction bundles), not in the
+  vector store. We'll set it aside; it's configuration more than memory.
+
+The useful mental model: episodic memory is your journal, semantic memory is the
+lessons you extracted from it, and procedural memory is your training.
+
+### The two operations: save and search
+
+An agent interacts with long-term memory through exactly two verbs, and the
+interesting question is *when* it uses each.
+
+**Search (read)** is the easy one and it's just retrieval augmentation. Before
+(or during) a turn, you embed the current context, search the store, and inject
+the top matches into the prompt as context. The agent doesn't have to *decide* to
+search — you can do it automatically on every turn. Or you can expose search as a
+**tool** (Module 2) and let the model call `search_memory("past refunds for this
+user")` when it judges it needs history. Tool-gated search is more token-efficient
+(you don't retrieve when you don't need to) but depends on the model realizing it
+should look.
+
+**Save (write)** is where the design decisions live, because *saving everything
+is a mistake*. A store polluted with every trivial exchange retrieves noise, and
+retrieval quality collapses — the RAG precision problem from Course 2, now
+self-inflicted. Two patterns:
+
+1. **Agent-driven save.** Expose `save_memory(content)` as a tool. The model
+   decides something is worth remembering and calls it. Honest but unreliable —
+   models under-save (forget to write) or over-save (hoard trivia).
+2. **Reflection-driven save.** After a turn or at end of session, a *separate*
+   step reviews the transcript and extracts what's worth keeping — deduping
+   against existing memories, distilling episodes into semantic facts. This is
+   the grounded-reflection idea from Module 1.3 applied to memory: don't ask the
+   agent to journal mid-task; run a reflection pass that decides what survives.
+
+Most production systems use both: tool-gated search on demand, reflection-driven
+save at natural boundaries.
+
+### The decision, drawn
+
+Here is a single turn where the agent searches memory to ground its answer, and a
+reflection step afterward decides what to persist.
+
+<Mermaid chart={`
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant A as Agent
+    participant V as Vector store (long-term)
+    participant R as Reflection step
+    U->>A: "Cancel my subscription like last time."
+    Note over A: "last time" — I need history
+    A->>V: search_memory(embed("subscription cancellation, this user"))
+    V-->>A: episodic: "2026-05: cancelled plan, kept data export"
+    Note over A: ground the plan on the retrieved episode
+    A-->>U: "Cancelling now, and exporting your data first — as before."
+    Note over A,R: turn ends → reflection decides what to save
+    R->>R: distil episode → semantic fact
+    R->>V: save_memory("User cancels via data-export-first flow", dedup)
+    V-->>R: stored (or merged with existing)
+`} />
+
+### A memory manager, in code
+
+Two methods — `search` and `save` — over any vector store. The save path
+embeds, checks for a near-duplicate, and merges rather than blindly inserting.
+
+```python
+class MemoryManager:
+    """Long-term memory over a vector store. Search is retrieval; save is
+    reflection-gated and dedup-aware — never a blind insert."""
+
+    def __init__(self, store, embed, *, dup_threshold=0.92):
+        self.store = store          # your vector DB (Course 2)
+        self.embed = embed
+        self.dup_threshold = dup_threshold
+
+    def search(self, query: str, *, k=5, kind=None):
+        vec = self.embed(query)
+        filt = {"kind": kind} if kind else None   # "episodic" | "semantic"
+        return self.store.query(vec, top_k=k, filter=filt)
+
+    def save(self, content: str, *, kind="semantic", metadata=None):
+        vec = self.embed(content)
+        # Dedup: if a near-identical memory exists, merge instead of duplicating.
+        hits = self.store.query(vec, top_k=1, filter={"kind": kind})
+        if hits and hits[0].score >= self.dup_threshold:
+            return self.store.update(hits[0].id, content=content, seen_again=True)
+        return self.store.insert(
+            vector=vec,
+            content=content,
+            kind=kind,
+            metadata=metadata or {},
+        )
+```
+
+```typescript
+class MemoryManager {
+  // Long-term memory over a vector store. Search is retrieval; save is
+  // reflection-gated and dedup-aware — never a blind insert.
+  constructor(
+    private store: VectorStore,
+    private embed: (t: string) => Promise<number[]>,
+    private dupThreshold = 0.92,
+  ) {}
+
+  async search(query: string, { k = 5, kind }: { k?: number; kind?: string } = {}) {
+    const vec = await this.embed(query);
+    return this.store.query(vec, { topK: k, filter: kind ? { kind } : undefined });
+  }
+
+  async save(content: string, { kind = "semantic", metadata = {} } = {}) {
+    const vec = await this.embed(content);
+    // Dedup: merge into a near-identical memory instead of duplicating it.
+    const [top] = await this.store.query(vec, { topK: 1, filter: { kind } });
+    if (top && top.score >= this.dupThreshold) {
+      return this.store.update(top.id, { content, seenAgain: true });
+    }
+    return this.store.insert({ vector: vec, content, kind, metadata });
+  }
+}
+```
+
+> **Honest caveat.** Memory is a double-edged sword. A wrong semantic fact ("user
+> prefers email") retrieved confidently is worse than no memory — the agent acts
+> on a stale truth with full conviction. Version your memories with timestamps,
+> let newer facts supersede older ones, and treat retrieved memory as *evidence*
+> to weigh, not gospel to obey. The same injection risk from Module 2 applies:
+> memory content is untrusted input, because a past turn (possibly adversarial)
+> wrote it.
+
+---
+
+## 3.2 — State Persistence & Checkpointing
+
+### An agent run is a background process
+
+A short chat completes in one request. A real agentic task — refactor this repo,
+reconcile these ledgers, migrate this schema — runs for dozens of steps over
+minutes or hours. Treat that run like any long-lived background process: it
+should be **checkpointable** (save progress), **resumable** (crash at step 40,
+restart at step 40, not step 1), and **pausable** (stop for human approval, then
+continue).
+
+The unit of persistence is the **checkpoint**: a snapshot of the agent's full
+state taken after each step. State here means everything you'd need to resume —
+the message transcript, the current step index, any accumulated scratch
+variables, the loop budget remaining (Module 1). Persist a checkpoint after every
+step, and the run becomes durable.
+
+Three capabilities fall out of checkpointing for free:
+
+- **Resume** — load the latest checkpoint, continue the loop. Crash recovery.
+- **Pause/resume** — a checkpoint *is* a pause. Stop the loop, persist, and the
+  run can sit idle for a second or a week before resuming. This is how
+  human-in-the-loop approval works: checkpoint, wait for the human, resume.
+- **Time-travel debugging** — because every step is a checkpoint, you can load
+  *any* past state, inspect exactly what the agent knew at step 12, and even fork
+  a new run from there with a different input. When an agent goes wrong at step
+  40, you don't re-run 40 steps hoping to reproduce it — you load checkpoint 39
+  and step forward.
+
+### The lifecycle, as a state machine
+
+<Mermaid chart={`
+stateDiagram-v2
+    [*] --> Running
+    Running --> Checkpointed: step completes → persist state
+    Checkpointed --> Running: resume next step
+    Checkpointed --> Paused: awaiting human / external event
+    Paused --> Running: resume from checkpoint
+    Running --> Crashed: process dies
+    Crashed --> Running: reload latest checkpoint
+    Checkpointed --> TimeTravel: load an OLD checkpoint
+    TimeTravel --> Running: fork / replay from step N
+    Running --> [*]: task complete
+`} />
+
+Notice every arrow back into `Running` starts from a persisted checkpoint. The
+in-memory process is disposable; the checkpoint is the source of truth.
+
+### The bloat problem — and the serialization adapter
+
+Here is the trap that turns a clean design into a 40 GB MongoDB collection.
+
+The obvious way to checkpoint is: serialize the raw message array from the
+provider SDK and save it. **Do not do this.** Raw LLM message objects are
+enormous and full of things you must not persist:
+
+- Full tool *schemas* echoed back on every message.
+- Provider metadata, request IDs, token-usage blocks, model fingerprints.
+- Base64-encoded images inlined into content.
+- Thinking/reasoning blocks that may be model-internal and non-portable.
+- Nested SDK wrapper objects that don't survive `JSON.stringify` cleanly.
+
+Now compound it: you checkpoint **after every step**, and the transcript **grows
+every step**. Save the raw growing array 60 times and you've stored the same
+content ~60 times over, each copy fatter than the last. That is quadratic
+storage growth for a linear task. This is exactly how agent databases bloat.
+
+The fix is the **serialization adapter** — a boundary that translates between two
+representations:
+
+- The **runtime object**: the fat provider-SDK message, optimized for making API
+  calls.
+- The **persisted record**: a lean, normalized, provider-agnostic snapshot,
+  optimized for storage and resumption.
+
+You never save the runtime object. You run it through an adapter that strips it to
+the essential fields, and you rehydrate on load. This is the exact same pattern
+this platform uses everywhere else — the API's response adapter that turns fat DB
+documents into lean domain objects, and the "lean update" the client sends for
+progress (docs/03, docs/04). It's the Trinity boundary applied to agent state:
+the storage layer never sees the raw provider shape.
+
+<Mermaid chart={`
+flowchart LR
+    RT["Runtime message<br/>(fat provider SDK object:<br/>schemas, metadata, base64, usage)"]
+    A{{"Serialization adapter"}}
+    LEAN["Lean record<br/>(role, content, tool refs,<br/>truncated results)"]
+    DB[("MongoDB<br/>checkpoints")]
+    RT -->|"toLean() — strip"| A
+    A --> LEAN
+    LEAN --> DB
+    DB -->|"fromLean() — rehydrate"| A
+    A -.->|"rebuild prompt-ready messages"| RT
+`} />
+
+### The adapter, in code
+
+The adapter has two directions. `to_lean` throws away everything the storage layer
+doesn't need; `from_lean` rebuilds a prompt-ready message on load. Note what
+survives (role, essential content, tool-call id/name/args, *truncated* tool
+output) and what doesn't (schemas, usage, provider metadata, raw images →
+references).
+
+```python
+from dataclasses import dataclass, asdict
+from datetime import datetime, timezone
+
+MAX_RESULT_CHARS = 4_000   # tool outputs are truncated for storage (Module 1)
+
+@dataclass
+class LeanMessage:
+    role: str                       # "user" | "assistant" | "tool"
+    text: str | None = None
+    tool_calls: list | None = None  # [{id, name, args}] — NOT the full schema
+    tool_result: dict | None = None # {id, output} — output truncated
+    ts: str = ""
+
+def to_lean(raw_msg) -> LeanMessage:
+    """Fat provider message → lean persisted record. Drops schemas, usage,
+    metadata, and inlined images; truncates tool output."""
+    lean = LeanMessage(role=raw_msg.role, ts=datetime.now(timezone.utc).isoformat())
+    text_parts, tool_calls = [], []
+    for block in raw_msg.content:
+        if block.type == "text":
+            text_parts.append(block.text)
+        elif block.type == "tool_use":
+            # Keep id + name + args ONLY. The schema lives in your tool registry,
+            # not in every checkpoint — rehydrate it from there.
+            tool_calls.append({"id": block.id, "name": block.name, "args": block.input})
+        elif block.type == "tool_result":
+            out = _stringify(block.content)[:MAX_RESULT_CHARS]
+            lean.tool_result = {"id": block.tool_use_id, "output": out}
+        # image / thinking / usage blocks are intentionally DROPPED
+        # (store images by reference/URL, not inlined base64)
+    lean.text = "\n".join(text_parts) or None
+    lean.tool_calls = tool_calls or None
+    return lean
+
+def from_lean(lean: LeanMessage, tool_registry):
+    """Lean record → prompt-ready message. Schemas are re-attached from the
+    registry, not read from storage."""
+    content = []
+    if lean.text:
+        content.append({"type": "text", "text": lean.text})
+    for call in lean.tool_calls or []:
+        content.append({"type": "tool_use", "id": call["id"],
+                        "name": call["name"], "input": call["args"]})
+    if lean.tool_result:
+        content.append({"type": "tool_result",
+                        "tool_use_id": lean.tool_result["id"],
+                        "content": lean.tool_result["output"]})
+    return {"role": lean.role, "content": content}
+
+# --- Checkpoint: the whole resumable state, lean and small ---
+async def checkpoint(db, run_id: str, step: int, raw_messages, extra_state: dict):
+    doc = {
+        "run_id": run_id,
+        "step": step,
+        "messages": [asdict(to_lean(m)) for m in raw_messages],
+        "state": extra_state,          # budget left, cursor, scratch vars
+        "ts": datetime.now(timezone.utc).isoformat(),
+    }
+    # One document per (run_id, step) → time-travel: every step is recoverable.
+    await db.checkpoints.update_one(
+        {"run_id": run_id, "step": step}, {"$set": doc}, upsert=True
+    )
+```
+
+```typescript
+const MAX_RESULT_CHARS = 4_000; // tool outputs truncated for storage (Module 1)
+
+interface LeanMessage {
+  role: "user" | "assistant" | "tool";
+  text?: string;
+  toolCalls?: { id: string; name: string; args: unknown }[]; // NOT the full schema
+  toolResult?: { id: string; output: string };               // output truncated
+  ts: string;
+}
+
+function toLean(raw: RawMessage): LeanMessage {
+  const lean: LeanMessage = { role: raw.role, ts: new Date().toISOString() };
+  const textParts: string[] = [];
+  const toolCalls: LeanMessage["toolCalls"] = [];
+  for (const block of raw.content) {
+    if (block.type === "text") {
+      textParts.push(block.text);
+    } else if (block.type === "tool_use") {
+      // id + name + args ONLY — the schema lives in your tool registry.
+      toolCalls.push({ id: block.id, name: block.name, args: block.input });
+    } else if (block.type === "tool_result") {
+      lean.toolResult = {
+        id: block.tool_use_id,
+        output: stringify(block.content).slice(0, MAX_RESULT_CHARS),
+      };
+    }
+    // image / thinking / usage blocks intentionally DROPPED (store images by ref)
+  }
+  if (textParts.length) lean.text = textParts.join("\n");
+  if (toolCalls.length) lean.toolCalls = toolCalls;
+  return lean;
+}
+
+function fromLean(lean: LeanMessage): RawMessage {
+  const content: unknown[] = [];
+  if (lean.text) content.push({ type: "text", text: lean.text });
+  for (const c of lean.toolCalls ?? [])
+    content.push({ type: "tool_use", id: c.id, name: c.name, input: c.args });
+  if (lean.toolResult)
+    content.push({ type: "tool_result", tool_use_id: lean.toolResult.id, content: lean.toolResult.output });
+  return { role: lean.role, content };
+}
+
+async function checkpoint(db, runId: string, step: number, rawMessages: RawMessage[], extraState: object) {
+  const doc = {
+    runId, step,
+    messages: rawMessages.map(toLean),
+    state: extraState, // budget left, cursor, scratch vars
+    ts: new Date().toISOString(),
+  };
+  // One document per (runId, step) → every step is recoverable (time-travel).
+  await db.collection("checkpoints").updateOne({ runId, step }, { $set: doc }, { upsert: true });
+}
+```
+
+The payoff: each checkpoint stores only lean records, tool schemas live once in
+your code (not once per message per checkpoint), and images are references rather
+than inlined blobs. The same 60-step run that would have written gigabytes now
+writes megabytes.
+
+> **A note on storage strategy.** Storing a full transcript snapshot per step is
+> the simplest resumable design and it's what the code above does — durable and
+> easy to reason about. If even the lean snapshots grow uncomfortable on very
+> long runs, the next step is *append-only deltas*: store only the new messages
+> per step and reconstruct state by replaying. Deltas are lighter but harder to
+> query and fork. Start with lean snapshots; reach for deltas only when
+> measurement says you must.
+
+---
+
+## 3.3 — Context-Window Management
+
+### The scratchpad has a ceiling
+
+Long-term memory (3.1) is unbounded. The scratchpad is not. Every model has a
+context limit, and a long agent run marches straight toward it: each tool call
+and result appends more tokens, and eventually the transcript won't fit. You have
+three options when that happens, and the right answer is usually all three at
+once.
+
+| Strategy | What it does | Cost | Risk |
+| --- | --- | --- | --- |
+| **Rolling window** | Keep the last *N* messages; drop the oldest. | Free (no model call) | Silently forgets early context |
+| **Eviction** | Drop specific low-value messages (stale tool results, resolved errors). | Free | Might evict something still needed |
+| **Summarization** | Compress old turns into a summary message. | A model call | Lossy; the summary can distort |
+
+### What you must never evict
+
+Naive truncation — "keep the last 20 messages" — will eventually delete two things
+that break the agent:
+
+1. **The system prompt.** It lives at position 0 and defines the agent's
+   identity, tools, and rules. Evict it and the agent loses its mind — literally
+   forgets what it is. The system prompt is **pinned**; it is never subject to
+   the window.
+
+2. **Recent critical tool output.** The result the agent is *about to act on* —
+   the file it just read, the query it just ran — must survive. Evicting a tool
+   result while keeping the tool *call* that produced it also corrupts the
+   transcript (a call with no result, per Module 2).
+
+So context management is never a blind "keep last N." It's a **structured
+compaction**: pin the system prompt and any pinned facts, keep a recent verbatim
+window intact, and summarize (or evict) the *middle* — the old, already-acted-on
+turns that are safe to compress.
+
+<Mermaid chart={`
+flowchart TB
+    T["Transcript exceeds token budget"]
+    T --> P["PIN: system prompt + pinned facts<br/>(never touched)"]
+    T --> M["MIDDLE: old, acted-on turns"]
+    T --> R["RECENT: last N messages<br/>+ critical tool outputs (kept verbatim)"]
+    M --> S{"summarize or evict?"}
+    S -->|"has reusable info"| SUM["one summary message"]
+    S -->|"stale / resolved"| EV["drop"]
+    P --> OUT["Rebuilt transcript:<br/>pinned + summary + recent"]
+    SUM --> OUT
+    R --> OUT
+    OUT --> C["fits the budget"]
+`} />
+
+### The caching tax on summarization
+
+One honest cost that catches teams off guard: **summarizing invalidates your
+prompt cache.** Prompt caching (a major cost lever for long agents) works on a
+*prefix match* — the provider caches the longest unchanged prefix of your
+messages. The moment you rewrite the middle of the transcript into a summary, you
+change the prefix, and every cached token after that point is recomputed at full
+price on the next call.
+
+The practical consequence: don't compact on every single turn. Let the transcript
+grow within a comfortable margin of the limit so the cached prefix stays stable
+and cheap, then compact in a larger batch when you actually approach the ceiling.
+Compaction is a cost trade — you pay a summarization call plus a cache reset to
+buy headroom. Do it deliberately, not reflexively.
+
+### A context manager, in code
+
+`compact` runs only when over budget. It pins, keeps a recent window verbatim,
+summarizes the safe middle, and rebuilds — preserving tool_use/tool_result
+pairing so the transcript stays valid.
+
+```python
+def compact(messages, *, token_budget, count_tokens, summarize,
+            keep_recent=12, pinned_ids=frozenset()):
+    """Return a transcript under token_budget. Pins the system prompt + any
+    pinned messages, keeps the last `keep_recent` verbatim, summarizes the
+    middle. No-op if already under budget (don't pay the cache tax needlessly)."""
+    if count_tokens(messages) <= token_budget:
+        return messages                      # under budget → touch nothing
+
+    system = messages[0:1]                    # position 0 is always pinned
+    pinned = [m for m in messages[1:] if m.get("id") in pinned_ids]
+    recent = messages[-keep_recent:]
+
+    # The middle = everything not pinned and not in the recent window.
+    recent_ids = {id(m) for m in recent}
+    middle = [m for m in messages[1:-keep_recent]
+              if m.get("id") not in pinned_ids and id(m) not in recent_ids]
+
+    if not middle:
+        return messages                       # nothing safe to compress
+
+    summary_text = summarize(middle)          # one model call — the lossy step
+    summary_msg = {"role": "user",
+                   "content": [{"type": "text",
+                                "text": f"[Summary of earlier turns]\n{summary_text}"}]}
+
+    rebuilt = system + pinned + [summary_msg] + recent
+    # If a kept tool_result lost its tool_use in the middle, drop the orphan
+    # result too — a result with no call is an invalid transcript (Module 2).
+    return _drop_orphan_tool_results(rebuilt)
+```
+
+```typescript
+function compact(
+  messages: Message[],
+  {
+    tokenBudget,
+    countTokens,
+    summarize,
+    keepRecent = 12,
+    pinnedIds = new Set<string>(),
+  }: CompactOpts,
+): Message[] {
+  // No-op if already under budget — don't pay the cache-invalidation tax.
+  if (countTokens(messages) <= tokenBudget) return messages;
+
+  const system = messages.slice(0, 1);        // position 0 always pinned
+  const pinned = messages.slice(1).filter((m) => m.id && pinnedIds.has(m.id));
+  const recent = messages.slice(-keepRecent);
+  const recentSet = new Set(recent);
+
+  const middle = messages
+    .slice(1, -keepRecent)
+    .filter((m) => !(m.id && pinnedIds.has(m.id)) && !recentSet.has(m));
+
+  if (middle.length === 0) return messages;   // nothing safe to compress
+
+  const summaryText = summarize(middle);      // the lossy model call
+  const summaryMsg: Message = {
+    role: "user",
+    content: [{ type: "text", text: `[Summary of earlier turns]\n${summaryText}` }],
+  };
+
+  const rebuilt = [...system, ...pinned, summaryMsg, ...recent];
+  // Drop any tool_result whose tool_use fell into the summarized middle —
+  // an orphan result is an invalid transcript (Module 2).
+  return dropOrphanToolResults(rebuilt);
+}
+```
+
+The subtlety in the last line matters more than it looks: summarizing the middle
+can strand a tool *result* in the recent window whose tool *call* got compressed
+away. Module 2 taught that a result with no matching call is a malformed
+transcript. A careful compactor cleans up the orphans it creates.
+
+---
+
+## 3.4 — Graph-Based State Machines
+
+### Beyond the linear array
+
+Every agent so far in this course has been a **linear array of messages** run in a
+`while` loop. That model is fine, and for many agents it's all you need. But it
+has limits that show up as your agent grows:
+
+- Control flow is implicit — buried inside the loop body and the model's choices,
+  not something you can *see*.
+- Branching (if the plan fails, go back and re-plan) is ad-hoc `if` statements.
+- State that isn't the message array (a running plan, a scratch counter, a set of
+  visited URLs) rides along awkwardly as loose variables.
+
+The **graph** model generalizes the loop. Instead of "run these messages through
+a loop," you say: an agent is a **cyclic graph** of **nodes**, connected by
+**edges**, passing a shared **state** object between them. This is the model
+behind frameworks like LangGraph, and it's worth understanding conceptually even
+if you never adopt one — because it makes explicit what the linear loop leaves
+implicit.
+
+The four pieces:
+
+- **State** — a typed dictionary that *is* the agent's memory for this run:
+  `{"messages": [...], "plan": "...", "step": 0, "visited": {...}}`. Every node
+  reads it and returns updates to it.
+- **Node** — a function `(state) -> partial_update`. A node might call the model,
+  run a tool, or do plain logic. It doesn't mutate state directly; it returns
+  *what changed*.
+- **Edge** — control flow. A normal edge is "after node A, go to node B." A
+  **conditional edge** routes based on state ("if `plan` is done, go to `end`;
+  else go back to `act`"). Cycles are first-class — this is how you get a loop.
+- **Reducer** — the rule for *how* a node's partial update merges into the state.
+  This is the piece people miss, and it's where subtle bugs live.
+
+### Reducers: append vs. replace
+
+A node returns `{"messages": [new_msg]}`. What does the graph do with it? That
+depends on the **reducer** attached to the `messages` field.
+
+- An **append reducer** concatenates: `state["messages"] += update["messages"]`.
+  This is what you want for the transcript — each node adds to the running
+  history.
+- A **replace reducer** overwrites: `state["plan"] = update["plan"]`. This is what
+  you want for a field like the current plan — a node produces a *new* plan that
+  supersedes the old one.
+
+Get this backwards and you get maddening bugs: an append reducer on `plan`
+accumulates a growing pile of stale plans; a replace reducer on `messages` throws
+away your entire transcript on every step. **The reducer is a per-field
+decision**, and it's the single most important concept in the graph model.
+
+| Field | Reducer | Why |
+| --- | --- | --- |
+| `messages` | append | Transcript grows; never overwrite history |
+| `plan` | replace | A new plan supersedes the old |
+| `step` | replace (or increment) | Latest value wins |
+| `visited_urls` | set-union | Accumulate uniques without duplicates |
+| `errors` | append | Keep the full error trail for debugging |
+
+### The graph, drawn
+
+A minimal ReAct agent as a graph: a reasoning node, a tool node, and a
+conditional edge that loops until the task is done. Every transition is a
+checkpoint (3.2).
+
+<Mermaid chart={`
+stateDiagram-v2
+    [*] --> Reason
+    Reason --> Route
+    Route --> Act: model requested a tool
+    Route --> Done: model answered (end_turn)
+    Act --> Reason: tool_result appended → loop
+    Done --> [*]
+    note right of Act
+        each node returns a partial update;
+        reducers merge it into state;
+        state is checkpointed here
+    end note
+`} />
+
+That cycle — Reason → Act → Reason — is the exact ReAct loop from Module 1. The
+graph hasn't changed *what* the agent does; it has made the loop, the branch, and
+the state **explicit, inspectable, and checkpointable**.
+
+### A tiny graph runtime, in code
+
+You don't need a framework to grasp the model. Here is a minimal graph engine:
+typed state, per-field reducers, nodes that return partial updates, a checkpoint
+after every node, and conditional routing.
+
+```python
+from typing import Callable
+
+# Reducers: how a field's update merges into state.
+def append_reducer(old, new): return (old or []) + new
+def replace_reducer(old, new): return new
+def union_reducer(old, new): return (old or set()) | set(new)
+
+REDUCERS = {
+    "messages": append_reducer,
+    "plan": replace_reducer,
+    "step": replace_reducer,
+    "visited": union_reducer,
+}
+
+class Graph:
+    def __init__(self, reducers, checkpointer):
+        self.nodes: dict[str, Callable] = {}
+        self.edges: dict[str, Callable] = {}   # node -> (state) -> next node name
+        self.reducers = reducers
+        self.checkpointer = checkpointer
+
+    def add_node(self, name, fn): self.nodes[name] = fn
+    def add_edge(self, name, router): self.edges[name] = router
+
+    def _merge(self, state, update):
+        for key, value in update.items():
+            reduce = self.reducers.get(key, replace_reducer)  # default: replace
+            state[key] = reduce(state.get(key), value)
+        return state
+
+    async def run(self, state, *, start, run_id):
+        node = start
+        while node != "END":
+            update = await self.nodes[node](state)   # node returns a PARTIAL update
+            state = self._merge(state, update)       # reducers apply per field
+            await self.checkpointer(run_id, state["step"], state)  # persist every step
+            node = self.edges[node](state)           # conditional routing (cycles allowed)
+        return state
+
+# A node is just (state) -> partial update. It never mutates state directly.
+async def reason_node(state):
+    resp = call_model(messages=state["messages"], tools=TOOLS)
+    return {"messages": [resp.assistant_message], "step": state["step"] + 1}
+
+def route_after_reason(state):
+    last = state["messages"][-1]
+    return "act" if has_tool_calls(last) else "END"
+```
+
+```typescript
+type Reducer = (old: any, next: any) => any;
+
+const appendReducer: Reducer = (old, next) => [...(old ?? []), ...next];
+const replaceReducer: Reducer = (_old, next) => next;
+const unionReducer: Reducer = (old, next) => new Set([...(old ?? []), ...next]);
+
+const REDUCERS: Record<string, Reducer> = {
+  messages: appendReducer,
+  plan: replaceReducer,
+  step: replaceReducer,
+  visited: unionReducer,
+};
+
+class Graph {
+  private nodes: Record<string, (s: any) => Promise<object>> = {};
+  private edges: Record<string, (s: any) => string> = {};
+
+  constructor(
+    private reducers: Record<string, Reducer>,
+    private checkpointer: (runId: string, step: number, state: any) => Promise<void>,
+  ) {}
+
+  addNode(name: string, fn: (s: any) => Promise<object>) { this.nodes[name] = fn; }
+  addEdge(name: string, router: (s: any) => string) { this.edges[name] = router; }
+
+  private merge(state: any, update: object) {
+    for (const [key, value] of Object.entries(update)) {
+      const reduce = this.reducers[key] ?? replaceReducer; // default: replace
+      state[key] = reduce(state[key], value);
+    }
+    return state;
+  }
+
+  async run(state: any, { start, runId }: { start: string; runId: string }) {
+    let node = start;
+    while (node !== "END") {
+      const update = await this.nodes[node](state); // PARTIAL update
+      state = this.merge(state, update);            // reducers apply per field
+      await this.checkpointer(runId, state.step, state); // persist every step
+      node = this.edges[node](state);               // conditional routing (cycles allowed)
+    }
+    return state;
+  }
+}
+
+// A node returns a partial update; it never mutates state directly.
+async function reasonNode(state: any) {
+  const resp = await callModel({ messages: state.messages, tools: TOOLS });
+  return { messages: [resp.assistantMessage], step: state.step + 1 };
+}
+
+function routeAfterReason(state: any): string {
+  const last = state.messages[state.messages.length - 1];
+  return hasToolCalls(last) ? "act" : "END";
+}
+```
+
+Look at how the pieces from this whole module converge in `run`: nodes return
+partial updates, **reducers** merge them (3.4), the **checkpointer** persists lean
+state after every step (3.2), and the message field — the scratchpad — would be
+run through **compaction** (3.3) before each model call. The graph is where
+short-term memory, persistence, and context management all meet.
+
+> **Honest caveat.** A graph is not free. For a three-tool agent that runs in five
+> steps, the linear `while` loop from Module 1 is simpler, easier to debug, and
+> perfectly adequate — reach for a graph when you actually need explicit
+> branching, durable resumption, or multiple cooperating agents, not because
+> "graph" sounds more sophisticated. And the reducers are where the real bugs hide:
+> an append where you meant replace produces slow, silent state corruption that no
+> type checker will catch. When a graph agent misbehaves in a way that makes no
+> sense, suspect a reducer first.
+
+---
+
+## Recap
+
+- **Short-term vs. long-term memory** are different physics: the scratchpad is
+  fast, exact, bounded, and ephemeral; the vector store is unbounded, persistent,
+  and lossy. Long-term memory is RAG over the agent's own history (episodic =
+  what happened, semantic = what's true). The agent *searches* freely
+  (auto or tool-gated) but should *save* deliberately — reflection-gated and
+  dedup-aware, because saving everything poisons retrieval.
+- **Checkpointing** turns an agent run into a resumable background process:
+  crash recovery, pause/resume for human approval, and time-travel debugging all
+  fall out of persisting state after every step. The **serialization adapter** is
+  non-negotiable — never persist raw provider message objects (schemas, metadata,
+  base64, usage); strip them to lean records or your database bloats
+  quadratically. It's the same lean-boundary pattern this platform uses for DB
+  documents.
+- **Context-window management** is structured compaction, not blind truncation:
+  pin the system prompt and critical facts, keep a recent verbatim window
+  (including the tool output you're about to use), and summarize or evict only the
+  safe middle. Summarizing invalidates the prompt cache, so compact in deliberate
+  batches, not every turn — and clean up any tool-result orphans you create.
+- **Graph-based state machines** make the implicit loop explicit: typed state
+  flows between nodes, each returning a partial update; **reducers** decide
+  per-field how updates merge (append the transcript, replace the plan); and state
+  is checkpointed at every step. It's the ReAct loop from Module 1, now
+  inspectable, branchable, and durable — with reducers as the number-one source of
+  subtle bugs.
+
+## Exercises
+
+1. **Save vs. search.** Build a `MemoryManager` over any vector store. Run a
+   two-session scenario: in session one the user states a durable preference; a
+   reflection step saves it as a semantic memory. In session two, retrieve it and
+   ground the agent's behaviour on it. Then deliberately save the *same*
+   preference again and confirm your dedup path merges rather than duplicates.
+
+2. **Measure the bloat.** Run a 30-step agent twice: once persisting the raw
+   message array per step, once through your serialization adapter. Compare the
+   two MongoDB collections' sizes. Plot storage against step count and confirm the
+   raw path grows quadratically while the lean path stays roughly linear.
+
+3. **Compact without breaking.** Construct a transcript that exceeds a small token
+   budget and contains a tool_call in the "middle" whose tool_result sits in the
+   "recent" window. Run your `compact` function and verify it (a) preserves the
+   system prompt, (b) keeps the recent window verbatim, and (c) drops the now-orphaned
+   tool_result. Confirm the compacted transcript is still a valid message sequence.
+
+4. **Break a reducer on purpose.** Build the tiny graph runtime and wire the
+   `plan` field with an *append* reducer instead of *replace*. Run a task that
+   re-plans twice and inspect the `plan` field at each checkpoint. Watch stale
+   plans accumulate and the agent's behaviour degrade — then fix the reducer and
+   confirm the corruption disappears.
+
+## Next: Module 4 — Guardrails, Cost & Evaluation
+
+Our agent now remembers, resumes, and manages its own context — it can run for
+hours without falling over. Which raises the last, most operational question: how
+do we keep it *safe*, *affordable*, and *provably good*? Module 4 closes the
+course with the production concerns — input/output guardrails and the trust
+boundaries around tools, hard cost and step budgets that stop a runaway loop from
+draining your account, and the evaluation harness that turns "it seems to work"
+into a number you can defend. It's where everything from the reasoning loop to the
+memory graph gets held to account.

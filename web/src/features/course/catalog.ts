@@ -66,10 +66,10 @@ export const COURSES: CourseMeta[] = [
       "Debug and evaluate multi-step runs",
     ],
     lessons: [
-      // Modules 1–2 authored; les_3–4 hold earlier lessons until their modules land.
+      // Modules 1–3 authored; les_4 holds the earlier lesson until its module lands.
       L("les_1", "Core Agentic Architectures & Reasoning Loops", 50),
       L("les_2", "Tool Use & Function Calling", 48),
-      L("les_3", "Memory and state", 27),
+      L("les_3", "Memory & State Management", 52),
       L("les_4", "Guardrails, cost, and evaluation", 29),
     ],
   },
