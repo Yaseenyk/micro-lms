@@ -109,9 +109,9 @@ export const COURSES: CourseMeta[] = [
       "Serve models for throughput, latency, and cost",
     ],
     lessons: [
-      // Module 1 authored; les_2–4 hold provisional topics until their modules land.
+      // Modules 1–2 authored; les_3–4 hold provisional topics until their modules land.
       L("les_1", "The Transformer Architecture & Attention Mechanics", 58),
-      L("les_2", "Inference Optimization & the Serving Stack", 30),
+      L("les_2", "Inference Optimization & the Serving Stack", 54),
       L("les_3", "Tokenization, Sampling & Decoding Strategies", 28),
       L("les_4", "Quantization, Fine-Tuning & Model Compression", 30),
     ],
