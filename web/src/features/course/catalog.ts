@@ -43,7 +43,9 @@ export const COURSES: CourseMeta[] = [
       "Measure and fix retrieval quality",
     ],
     lessons: [
-      L("les_1", "Why RAG beats a bigger prompt", 22),
+      // Module 1 (premium deep-dive). Modules 2–4 below still hold the earlier
+      // shallow lessons and get rewritten as each module is authored.
+      L("les_1", "Document Parsing & Ingestion Pipelines", 52),
       L("les_2", "Chunking without destroying meaning", 26),
       L("les_3", "Embeddings and vector search", 31),
       L("les_4", "Grounding, citations, and evals", 28),
