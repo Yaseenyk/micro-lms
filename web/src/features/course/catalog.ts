@@ -144,7 +144,7 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "How embeddings and vector databases actually work — distance metrics, indexes, hybrid search, and the metadata filtering that makes results usable.",
     priceLabel: "Free",
-    hours: "4h 50m",
+    hours: "3h 36m",
     outcomes: [
       "Choose an embedding model and metric",
       "Understand ANN indexes and their trade-offs",
@@ -152,11 +152,11 @@ export const COURSES: CourseMeta[] = [
       "Keep an index fresh and correct",
     ],
     lessons: [
-      // Modules 1–3 authored; les_4 holds the earlier lesson until its module lands.
+      // All four modules authored — course complete.
       L("les_1", "Vector Math, Embedding Spaces & High-Dimensional Geometry", 56),
       L("les_2", "Vector Indexing & Algorithms: ANN, IVF, PQ & HNSW", 54),
       L("les_3", "Vector Database Internals, Filtering & Production Sizing", 52),
-      L("les_4", "Keeping an index fresh", 25),
+      L("les_4", "Custom Embeddings, Multimodal Vectors & Evaluation", 54),
     ],
   },
   {
