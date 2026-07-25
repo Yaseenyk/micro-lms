@@ -45,8 +45,9 @@ export const COURSES: CourseMeta[] = [
     lessons: [
       // Module 1 (premium deep-dive). Modules 2–4 below still hold the earlier
       // shallow lessons and get rewritten as each module is authored.
+      // Modules 1–2 authored; les_3–4 hold earlier lessons until their modules land.
       L("les_1", "Document Parsing & Ingestion Pipelines", 52),
-      L("les_2", "Chunking without destroying meaning", 26),
+      L("les_2", "Hybrid Retrieval & Re-ranking", 48),
       L("les_3", "Embeddings and vector search", 31),
       L("les_4", "Grounding, citations, and evals", 28),
     ],
