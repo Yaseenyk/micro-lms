@@ -24,9 +24,11 @@ present (`isPaymentsEnabled`), `POST /api/payment/order` and
 paid courses still show their paywall — they just cannot be purchased until the
 keys are set (the dev-only `/api/dev/grant` bypass covers local testing).
 
-> The current catalog prices **Prompt Engineering & Evaluation** at ₹100
-> (`10_000` paise) and leaves the other nine courses free. To monetise another
-> course, give it a non-zero `priceInPaise`.
+> The platform currently runs **100% free** (every course `priceInPaise: 0`) as
+> a launch strategy — open access to build the initial user base. The paid
+> infrastructure (order endpoint, webhook, entitlement grant) stays intact and
+> dormant; to monetise a course later, give it a non-zero `priceInPaise` and its
+> paywall reactivates automatically.
 
 ---
 

@@ -662,7 +662,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
       "Treat prompts like code: patterns that work, why they work, and the evaluation loop that turns 'it felt better' into a number you can defend.",
     // Deliberate entry point: priced as a low-friction first purchase so the
     // landing page's "start for just 99" claim is literally true.
-    priceInPaise: 10_000,
+    priceInPaise: 0,
     hours: "4h 15m",
     outcomes: [
       "Apply reliable prompting patterns",

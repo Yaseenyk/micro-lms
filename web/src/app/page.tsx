@@ -30,7 +30,7 @@ const FAQ = [
   { q: "Are these video courses?", a: "No — on purpose. Every lesson is detailed writing plus custom diagrams. You read at your own pace, search the text, and never scrub a timeline." },
   { q: "Do I need to be an ML expert?", a: "No. Courses start from intuition and build up. If you can write basic code and are curious about AI, you can follow along." },
   { q: "What topics are covered?", a: "Ten courses across the modern AI stack: RAG, agents, ML foundations, LLM engineering, prompting, vector search, fine-tuning, MLOps, deep learning, and AI products." },
-  { q: "What does it cost?", a: "The complete Prompt Engineering & Evaluation course is a one-time ₹100 with lifetime access. The other nine courses are free while we expand them, so you can start learning immediately at no cost." },
+  { q: "What does it cost?", a: "Nothing. Every course and every lesson is free — no trial, no card. Create an account so your progress saves and resumes across devices, and start learning immediately." },
 ];
 
 export default function HomePage() {
@@ -71,9 +71,9 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-zinc-500">
-            <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> {starter.priceLabel} · lifetime access</span>
-            <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> {courses.length - 1} more courses, free</span>
+            <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> Every course free</span>
             <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> Detailed text + diagrams</span>
+            <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> Lifetime access</span>
           </div>
         </div>
 
@@ -160,19 +160,19 @@ export default function HomePage() {
           <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[36rem] -translate-x-1/2 rounded-full bg-cyan/10 blur-3xl" />
           <div className="relative">
             <h2 className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight text-zinc-50 sm:text-4xl">
-              Master prompt engineering for <GradientText>{starter.priceLabel}</GradientText>.
+              Every course, <GradientText>free</GradientText>.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-zinc-400">
-              The complete four-module course, one-time payment, lifetime access. Or start with any
-              of the {courses.length - 1} free courses first — no card required.
+              No paywall, no trial, no card. Create an account so your progress saves, then read
+              anything in the catalog.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
               <ButtonLink href={`/course/${starter.id}`}>
-                Get {starter.title} · {starter.priceLabel}
+                Start with {starter.title}
                 <ArrowRightIcon width={16} height={16} />
               </ButtonLink>
               <ButtonLink href="/courses" variant="ghost">
-                Browse free courses
+                Browse all {courses.length} courses
               </ButtonLink>
             </div>
           </div>

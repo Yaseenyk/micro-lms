@@ -45,11 +45,10 @@ export const COURSES: CourseMeta[] = [
     lessons: [
       // Module 1 (premium deep-dive). Modules 2–4 below still hold the earlier
       // shallow lessons and get rewritten as each module is authored.
-      // Modules 1–3 authored; les_4 holds the earlier lesson until Module 4 lands.
       L("les_1", "Document Parsing & Ingestion Pipelines", 52),
       L("les_2", "Hybrid Retrieval & Re-ranking", 48),
       L("les_3", "Query Understanding & Advanced Retrieval", 50),
-      L("les_4", "Grounding, citations, and evals", 28),
+      L("les_4", "Grounding, Generation & Evaluation", 50),
     ],
   },
   {
@@ -121,7 +120,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Make prompts a controlled variable, not a guess.",
     blurb:
       "Treat prompts like code: patterns that work, why they work, and the evaluation loop that turns 'it felt better' into a number you can defend.",
-    priceLabel: "₹100",
+    priceLabel: "Free",
     hours: "3h 30m",
     starter: true,
     outcomes: [
