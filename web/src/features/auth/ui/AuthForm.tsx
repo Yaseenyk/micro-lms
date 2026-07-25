@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -23,10 +23,15 @@ function nextPath(): string {
 
 export function AuthForm({ mode }: { mode: "register" | "login" }) {
   const router = useRouter();
-  const { register, login, pending, error } = useAuth();
+  const { register, login, pending, error, status } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+
+  // Already signed in? The auth forms are for anonymous users — send them on.
+  useEffect(() => {
+    if (status === "authenticated") router.replace(nextPath());
+  }, [status, router]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -38,6 +43,14 @@ export function AuthForm({ mode }: { mode: "register" | "login" }) {
   }
 
   const isRegister = mode === "register";
+
+  if (status === "authenticated") {
+    return (
+      <div className="mx-auto flex w-full max-w-md items-center justify-center gap-3 py-16 text-sm text-zinc-400">
+        <Spinner /> Redirecting…
+      </div>
+    );
+  }
 
   return (
     <motion.div

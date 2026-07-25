@@ -6,7 +6,7 @@
 "use client";
 
 import { useCourse } from "../hooks/useCourse";
-import { getCourseMeta } from "../catalog";
+import { getCourseMeta, isPaidCourse } from "../catalog";
 import { Card, ButtonLink } from "@/components/ui";
 
 export function CourseSummaryCard({ courseId }: { courseId: string }) {
@@ -15,6 +15,9 @@ export function CourseSummaryCard({ courseId }: { courseId: string }) {
 
   const percent = progress?.progressPercent ?? 0;
   const completed = progress?.lessons.filter((l) => l.completed).length ?? 0;
+  // Free courses are open to any signed-in user, so never fall through to the
+  // "Unlock ... for Free" upsell — only a genuinely paid course can gate here.
+  const open = access || !isPaidCourse(meta);
 
   return (
     <Card className="relative overflow-hidden">
@@ -31,7 +34,7 @@ export function CourseSummaryCard({ courseId }: { courseId: string }) {
 
       {phase === "loading" ? (
         <div className="mt-6 h-2 w-full animate-pulse rounded-full bg-zinc-800" />
-      ) : access ? (
+      ) : open ? (
         <div className="mt-6">
           <div className="flex items-center justify-between text-xs text-zinc-400">
             <span>

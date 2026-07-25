@@ -68,7 +68,7 @@ export function Player({
   const courseComplete = percent >= 100;
   const nextCourse = getNextCourse(courseId);
 
-  const { phase, content, error } = useLesson(courseId, active.id);
+  const { phase, content, error, reload } = useLesson(courseId, active.id);
 
   function toggleComplete() {
     void onSave({
@@ -240,9 +240,16 @@ export function Player({
             >
               {phase === "loading" && <ContentSkeleton />}
               {phase === "error" && (
-                <p className="mt-8 rounded-lg border border-rose-500/30 bg-rose-500/[0.08] px-4 py-3 text-sm text-rose-200">
-                  {error ?? "Could not load this lesson."}
-                </p>
+                <div className="mt-8 rounded-lg border border-rose-500/30 bg-rose-500/[0.08] px-4 py-3 text-sm text-rose-200">
+                  <span>{error ?? "Could not load this lesson."}</span>
+                  <button
+                    type="button"
+                    onClick={() => reload()}
+                    className="ml-3 font-medium text-rose-100 underline decoration-rose-300/50 underline-offset-4 transition-colors hover:text-white"
+                  >
+                    Retry
+                  </button>
+                </div>
               )}
               {phase === "ready" && content && <LessonContent blocks={content.blocks} />}
             </motion.div>

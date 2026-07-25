@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { courseService } from "../services/course.service";
 import type { LessonContent } from "../content.types";
 import { ApiError } from "@/lib/api-client";
@@ -17,6 +17,13 @@ export function useLesson(courseId: string, lessonId: string) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [content, setContent] = useState<LessonContent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [nonce, setNonce] = useState(0);
+
+  /** Drop this lesson's cache entry and re-fetch — powers the error Retry. */
+  const reload = useCallback(() => {
+    cache.current.delete(`${courseId}/${lessonId}`);
+    setNonce((n) => n + 1);
+  }, [courseId, lessonId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,7 +52,7 @@ export function useLesson(courseId: string, lessonId: string) {
     return () => {
       cancelled = true;
     };
-  }, [courseId, lessonId]);
+  }, [courseId, lessonId, nonce]);
 
-  return { phase, content, error };
+  return { phase, content, error, reload };
 }
