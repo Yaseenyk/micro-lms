@@ -107,7 +107,7 @@ bloat as it accumulates every worker's output.
 
 Here is a manager routing a request across specialized workers, then synthesizing.
 
-<Mermaid chart={`
+```mermaid
 flowchart TB
     U["User request"] --> M{"Manager agent<br/>decompose + route"}
     M -->|"needs data"| R["Research worker<br/>(search, retrieval tools)"]
@@ -120,7 +120,7 @@ flowchart TB
     D -->|"no — re-route"| M
     D -->|"yes"| OUT["Synthesized answer"]
     OUT --> U
-`} />
+```
 
 Notice the `done?` branch looping back to the manager. That cycle is what makes a
 hierarchy powerful — and, if unguarded, exactly what makes it loop forever (4.2).
@@ -254,7 +254,7 @@ The defenses are the budgets and circuit breakers from Module 1, elevated to the
 None of these are optional. A multi-agent system without a global budget is a
 system that *will*, eventually, spin.
 
-<Mermaid chart={`
+```mermaid
 flowchart TB
     S["Shared state<br/>(messages, queue, results, next_agent)"]
     S --> AG{"Route to next_agent"}
@@ -266,7 +266,7 @@ flowchart TB
     G -->|"ok — continue"| S
     G -->|"budget hit / no progress / loop"| STOP["Terminate gracefully"]
     G -->|"termination condition met"| DONE["Done"]
-`} />
+```
 
 ### A shared-state coordinator with loop guards
 
@@ -411,7 +411,7 @@ actions require approval.
 Watch the state persist across the human's absence — the run genuinely stops and
 resumes.
 
-<Mermaid chart={`
+```mermaid
 sequenceDiagram
     autonumber
     participant AG as Agent (graph)
@@ -430,7 +430,7 @@ sequenceDiagram
         AG->>AG: feed denial + reason back as an observation (Module 2)
         Note over AG: "User declined: draft for review instead" → agent adapts
     end
-`} />
+```
 
 Two details in that diagram carry the real weight:
 
@@ -589,7 +589,7 @@ patterns keep tokens out of reach.)
 
 ### The boundary, drawn
 
-<Mermaid chart={`
+```mermaid
 flowchart TB
     subgraph HOST["Your host / production — PROTECTED"]
         AG["Agent runtime"]
@@ -606,7 +606,7 @@ flowchart TB
     PROXY -.->|"secret added AFTER egress"| SEC
     CODE -.->|"blocked"| XFS["host filesystem"]
     CODE -.->|"blocked"| XNET["arbitrary internet"]
-`} />
+```
 
 ### A sandboxed executor
 

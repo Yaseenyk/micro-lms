@@ -128,7 +128,7 @@ save at natural boundaries.
 Here is a single turn where the agent searches memory to ground its answer, and a
 reflection step afterward decides what to persist.
 
-<Mermaid chart={`
+```mermaid
 sequenceDiagram
     autonumber
     participant U as User
@@ -145,7 +145,7 @@ sequenceDiagram
     R->>R: distil episode → semantic fact
     R->>V: save_memory("User cancels via data-export-first flow", dedup)
     V-->>R: stored (or merged with existing)
-`} />
+```
 
 ### A memory manager, in code
 
@@ -249,7 +249,7 @@ Three capabilities fall out of checkpointing for free:
 
 ### The lifecycle, as a state machine
 
-<Mermaid chart={`
+```mermaid
 stateDiagram-v2
     [*] --> Running
     Running --> Checkpointed: step completes → persist state
@@ -261,7 +261,7 @@ stateDiagram-v2
     Checkpointed --> TimeTravel: load an OLD checkpoint
     TimeTravel --> Running: fork / replay from step N
     Running --> [*]: task complete
-`} />
+```
 
 Notice every arrow back into `Running` starts from a persisted checkpoint. The
 in-memory process is disposable; the checkpoint is the source of truth.
@@ -300,7 +300,7 @@ documents into lean domain objects, and the "lean update" the client sends for
 progress (docs/03, docs/04). It's the Trinity boundary applied to agent state:
 the storage layer never sees the raw provider shape.
 
-<Mermaid chart={`
+```mermaid
 flowchart LR
     RT["Runtime message<br/>(fat provider SDK object:<br/>schemas, metadata, base64, usage)"]
     A{{"Serialization adapter"}}
@@ -311,7 +311,7 @@ flowchart LR
     LEAN --> DB
     DB -->|"fromLean() — rehydrate"| A
     A -.->|"rebuild prompt-ready messages"| RT
-`} />
+```
 
 ### The adapter, in code
 
@@ -493,7 +493,7 @@ compaction**: pin the system prompt and any pinned facts, keep a recent verbatim
 window intact, and summarize (or evict) the *middle* — the old, already-acted-on
 turns that are safe to compress.
 
-<Mermaid chart={`
+```mermaid
 flowchart TB
     T["Transcript exceeds token budget"]
     T --> P["PIN: system prompt + pinned facts<br/>(never touched)"]
@@ -506,7 +506,7 @@ flowchart TB
     SUM --> OUT
     R --> OUT
     OUT --> C["fits the budget"]
-`} />
+```
 
 ### The caching tax on summarization
 
@@ -672,7 +672,7 @@ A minimal ReAct agent as a graph: a reasoning node, a tool node, and a
 conditional edge that loops until the task is done. Every transition is a
 checkpoint (3.2).
 
-<Mermaid chart={`
+```mermaid
 stateDiagram-v2
     [*] --> Reason
     Reason --> Route
@@ -685,7 +685,7 @@ stateDiagram-v2
         reducers merge it into state;
         state is checkpointed here
     end note
-`} />
+```
 
 That cycle — Reason → Act → Reason — is the exact ReAct loop from Module 1. The
 graph hasn't changed *what* the agent does; it has made the loop, the branch, and

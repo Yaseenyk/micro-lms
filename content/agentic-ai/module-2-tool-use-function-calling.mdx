@@ -106,7 +106,7 @@ A single tool-calling turn is a round trip through your runtime. The model does
 not execute anything; it *requests* execution, your code runs the tool, and you
 hand the result back for the model to continue.
 
-<Mermaid chart={`
+```mermaid
 sequenceDiagram
     autonumber
     participant U as User
@@ -122,7 +122,7 @@ sequenceDiagram
     R->>M: tool_result(14°C, rain)
     M-->>R: "It's 14°C and raining in Paris."
     R-->>U: final answer
-`} />
+```
 
 Three things to notice, because they trip up everyone the first time:
 
@@ -456,7 +456,7 @@ Failures come from two directions, and they want different responses.
 Watch what happens when the model calls a real tool with a hallucinated argument.
 The tool fails, but the run does not.
 
-<Mermaid chart={`
+```mermaid
 sequenceDiagram
     autonumber
     participant M as Model
@@ -474,7 +474,7 @@ sequenceDiagram
     T-->>R: {"name": "Ada", ...}
     R->>M: tool_result(ok)
     M-->>R: "Found your account, Ada."
-`} />
+```
 
 The error never reached the user. It reached the *model*, phrased as a fact the
 model could act on, and the model recovered. That is the whole game.
@@ -666,7 +666,7 @@ requests tools.
 
 ### How the pieces line up
 
-<Mermaid chart={`
+```mermaid
 flowchart TB
     subgraph Agent["Your agent (MCP host)"]
         M["Model"]
@@ -683,7 +683,7 @@ flowchart TB
     C -->|"tools/list · tools/call"| F
     G -.->|"talks to GitHub API"| GH[("GitHub")]
     D -.->|"talks to Postgres"| PG[("Database")]
-`} />
+```
 
 The flow inside the agent:
 
