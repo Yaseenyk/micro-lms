@@ -16,3 +16,6 @@ build/
 *.log
 .DS_Store
 Thumbs.db
+
+# brand design source (kept locally, not in repo history)
+LMS Brand Logo Design/
