@@ -119,19 +119,19 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "Treat prompts like code: patterns that work, why they work, and the evaluation loop that turns 'it felt better' into a number you can defend.",
     priceLabel: "Free",
-    hours: "4h 15m",
+    hours: "3h 30m",
     starter: true,
     outcomes: [
-      "Apply reliable prompting patterns",
-      "Use few-shot examples effectively",
-      "Build an eval set and score changes",
-      "Stop tuning by vibes",
+      "Reason about tokens, context windows, and sampling",
+      "Build reasoning pipelines and enforce structured output",
+      "Defend against prompt injection",
+      "Evaluate prompts with golden datasets and LLM judges",
     ],
     lessons: [
       L("les_1", "The Core Mechanics", 48),
       L("les_2", "Advanced Prompt Pipelines & Guardrails", 52),
-      L("les_3", "Building an evaluation set", 26),
-      L("les_4", "Automated scoring and LLM judges", 23),
+      L("les_3", "Evaluation & Iteration", 52),
+      L("les_4", "Optimization & Deployment", 48),
     ],
   },
   {
