@@ -163,22 +163,23 @@ export const COURSES: CourseMeta[] = [
   {
     id: "fine-tuning",
     title: "Fine-Tuning & Adaptation",
-    tagline: "Teach a base model your task and voice.",
+    tagline: "The practice of fine-tuning: data, alignment, and evaluation.",
     blurb:
-      "When to fine-tune versus prompt or retrieve, how LoRA makes it cheap, and how to build the dataset that actually moves the needle.",
+      "Past the mechanics: build the curated, decontaminated dataset, run supervised fine-tuning, align with RLHF and DPO, and prove a fine-tune helped without regressing.",
     priceLabel: "Free",
-    hours: "5h 00m",
+    hours: "3h 40m",
     outcomes: [
-      "Decide fine-tune vs RAG vs prompt",
-      "Build and clean a training dataset",
-      "Use LoRA / parameter-efficient tuning",
-      "Evaluate a tuned model for regressions",
+      "Build a curated, decontaminated SFT dataset",
+      "Format and pack data with correct loss masking",
+      "Align a model with RLHF and DPO",
+      "Evaluate fine-tunes and catch regressions",
     ],
     lessons: [
-      L("les_1", "Fine-tune, retrieve, or just prompt?", 24),
-      L("les_2", "Datasets are the whole game", 29),
-      L("les_3", "LoRA and efficient tuning", 27),
-      L("les_4", "Evaluating a tuned model", 26),
+      // Module 1 authored; les_2–4 hold provisional topics until their modules land.
+      L("les_1", "The Data Engine: Curation & Formatting", 54),
+      L("les_2", "Supervised Fine-Tuning: The Training Loop", 50),
+      L("les_3", "Alignment: RLHF, DPO & Preference Optimization", 54),
+      L("les_4", "Evaluating Fine-Tunes & Preventing Regressions", 48),
     ],
   },
   {
