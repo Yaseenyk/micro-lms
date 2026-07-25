@@ -152,7 +152,8 @@ export const COURSES: CourseMeta[] = [
       "Keep an index fresh and correct",
     ],
     lessons: [
-      L("les_1", "Embeddings as coordinates for meaning", 24),
+      // Module 1 authored; les_2–4 hold earlier lessons until their modules land.
+      L("les_1", "Vector Math, Embedding Spaces & High-Dimensional Geometry", 56),
       L("les_2", "Approximate nearest-neighbour indexes", 28),
       L("les_3", "Hybrid search and filtering", 27),
       L("les_4", "Keeping an index fresh", 25),
@@ -244,6 +245,31 @@ export const COURSES: CourseMeta[] = [
   },
 ];
 
+/**
+ * Sequential 10-course roadmap — the intended learning order surfaced across the
+ * site (homepage catalog order, "what's next" after finishing a course). The
+ * applied-LLM track comes first (build things), then foundations/theory, then
+ * ops and product. This array is the single source of order; reorder here to
+ * reshape the whole roadmap. `authored` markers track content build-out.
+ */
+export const ROADMAP: readonly string[] = [
+  "prompt-engineering", //  1 · starter, authored — the low-friction entry point
+  "rag-systems",        //  2 · authored
+  "agentic-ai",         //  3 · authored
+  "vector-search",      //  4 · authoring in progress
+  "llm-engineering",    //  5
+  "fine-tuning",        //  6
+  "ml-foundations",     //  7
+  "deep-learning",      //  8
+  "mlops",              //  9
+  "ai-products",        // 10
+];
+
+const roadmapRank = (id: string): number => {
+  const i = ROADMAP.indexOf(id);
+  return i === -1 ? Number.MAX_SAFE_INTEGER : i; // unknown ids sink to the end
+};
+
 const BY_ID: Record<string, CourseMeta> = Object.fromEntries(COURSES.map((c) => [c.id, c]));
 
 export function getCourseMeta(courseId: string): CourseMeta {
@@ -251,7 +277,8 @@ export function getCourseMeta(courseId: string): CourseMeta {
 }
 
 export function getAllCourses(): CourseMeta[] {
-  return COURSES;
+  // Presented in roadmap order everywhere (homepage catalog, /courses grid).
+  return [...COURSES].sort((a, b) => roadmapRank(a.id) - roadmapRank(b.id));
 }
 
 /** The featured flagship course used by the hero CTA. */
@@ -264,21 +291,15 @@ export function isPaidCourse(course: CourseMeta): boolean {
   return course.priceLabel.trim().toLowerCase() !== "free";
 }
 
-// Curated learning path: what to suggest after finishing a course. Falls back
-// to the next catalog entry so every course has a "what's next".
-const NEXT: Record<string, string> = {
-  "prompt-engineering": "rag-systems",
-  "rag-systems": "vector-search",
-  "vector-search": "agentic-ai",
-};
-
+// "What's next" follows the sequential roadmap: the course immediately after
+// this one. Returns null for the final course (nothing after it).
 export function getNextCourse(courseId: string): CourseMeta | null {
-  const explicit = NEXT[courseId];
-  if (explicit && BY_ID[explicit]) return BY_ID[explicit];
-  const idx = COURSES.findIndex((c) => c.id === courseId);
-  return idx >= 0 && idx < COURSES.length - 1 ? COURSES[idx + 1]! : null;
+  const idx = ROADMAP.indexOf(courseId);
+  if (idx < 0 || idx >= ROADMAP.length - 1) return null;
+  const nextId = ROADMAP[idx + 1];
+  return nextId ? (BY_ID[nextId] ?? null) : null;
 }
 
 export function courseIds(): string[] {
-  return COURSES.map((c) => c.id);
+  return getAllCourses().map((c) => c.id);
 }
