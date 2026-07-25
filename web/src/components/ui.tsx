@@ -3,7 +3,8 @@
  * portfolio: ink glass surfaces, the cyan glow CTA, ice-hover ghost buttons.
  * No business logic, no data access.
  */
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import Link from "next/link";
 
 export function Container({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-6xl px-5 sm:px-8 ${className}`}>{children}</div>;
@@ -41,12 +42,26 @@ export function ButtonLink({
   children,
   variant = "primary",
   className = "",
-  ...props
-}: AnchorHTMLAttributes<HTMLAnchorElement> & { variant?: "primary" | "ghost" }) {
-  return (
-    <a className={`${variant === "primary" ? PRIMARY : GHOST} ${className}`} {...props}>
+  href = "#",
+}: {
+  children: ReactNode;
+  variant?: "primary" | "ghost";
+  className?: string;
+  href?: string;
+}) {
+  const classes = `${variant === "primary" ? PRIMARY : GHOST} ${className}`;
+  // Internal routes use client-side Next navigation so the in-memory auth session
+  // survives — a hard <a> reload reset the store and dropped users to the signed-out
+  // course page. External/hash links fall back to a plain anchor.
+  const isExternal = /^(https?:|mailto:|tel:|#)/.test(href);
+  return isExternal ? (
+    <a className={classes} href={href}>
       {children}
     </a>
+  ) : (
+    <Link className={classes} href={href}>
+      {children}
+    </Link>
   );
 }
 
