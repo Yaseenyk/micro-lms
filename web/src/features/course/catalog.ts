@@ -152,10 +152,10 @@ export const COURSES: CourseMeta[] = [
       "Keep an index fresh and correct",
     ],
     lessons: [
-      // Modules 1–2 authored; les_3–4 hold earlier lessons until their modules land.
+      // Modules 1–3 authored; les_4 holds the earlier lesson until its module lands.
       L("les_1", "Vector Math, Embedding Spaces & High-Dimensional Geometry", 56),
       L("les_2", "Vector Indexing & Algorithms: ANN, IVF, PQ & HNSW", 54),
-      L("les_3", "Hybrid search and filtering", 27),
+      L("les_3", "Vector Database Internals, Filtering & Production Sizing", 52),
       L("les_4", "Keeping an index fresh", 25),
     ],
   },
