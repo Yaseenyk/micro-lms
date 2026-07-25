@@ -66,9 +66,9 @@ export const COURSES: CourseMeta[] = [
       "Debug and evaluate multi-step runs",
     ],
     lessons: [
-      // Module 1 authored; les_2–4 hold earlier lessons until their modules land.
+      // Modules 1–2 authored; les_3–4 hold earlier lessons until their modules land.
       L("les_1", "Core Agentic Architectures & Reasoning Loops", 50),
-      L("les_2", "Tools the model can actually use", 30),
+      L("les_2", "Tool Use & Function Calling", 48),
       L("les_3", "Memory and state", 27),
       L("les_4", "Guardrails, cost, and evaluation", 29),
     ],
