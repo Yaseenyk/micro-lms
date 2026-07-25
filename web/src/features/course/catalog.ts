@@ -229,7 +229,7 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "The product craft around AI: scoping to the model's strengths, designing for uncertainty, keeping humans in the loop, and earning trust.",
     priceLabel: "Free",
-    hours: "4h 40m",
+    hours: "3h 18m",
     outcomes: [
       "Scope features to what models do well",
       "Design UX for probabilistic output",
@@ -237,11 +237,11 @@ export const COURSES: CourseMeta[] = [
       "Build trust, safety, and feedback in",
     ],
     lessons: [
-      // Modules 1–3 authored; les_4 holds the earlier lesson until its module lands.
+      // All four modules authored — course complete.
       L("les_1", "Real-Time UI & Streaming Architectures", 48),
       L("les_2", "Generative UI & Structured Client Actions", 48),
       L("les_3", "AI-First UX Patterns & Frontend State Management", 50),
-      L("les_4", "Trust, safety, and feedback", 25),
+      L("les_4", "Multimodal UI, Voice & Telemetry Feedback Loops", 52),
     ],
   },
 ];
