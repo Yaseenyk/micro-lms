@@ -32,4 +32,12 @@ export const courseService = {
     return apiClient.post<LessonContent>("/course/lesson", { courseId, lessonId });
   },
 
+  /**
+   * DEV ONLY: grant entitlement without paying (bypasses Razorpay). Hits the
+   * dev-only API route that exists only outside production; the caller gates
+   * this on NODE_ENV so it is never invoked in a production build.
+   */
+  async devUnlock(courseId: string): Promise<void> {
+    await apiClient.post<{ granted: boolean }>("/dev/grant", { courseId });
+  },
 };

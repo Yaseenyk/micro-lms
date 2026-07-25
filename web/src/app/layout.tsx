@@ -10,11 +10,11 @@ const firaCode = Fira_Code({ subsets: ["latin"], display: "swap", variable: "--f
 
 export const metadata: Metadata = {
   title: {
-    default: "Micro-LMS — learn full-stack, the right way",
-    template: "%s · Micro-LMS",
+    default: "Pith — get to the core of AI",
+    template: "%s · Pith",
   },
   description:
-    "A decoupled micro learning platform — static Next.js frontend, hardened Node.js API, signature-verified payments. Built on the Trinity Architecture.",
+    "Text-first AI courses — RAG, agents, prompt engineering, and more. Detailed writing and clear diagrams you read at your own pace. No video.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

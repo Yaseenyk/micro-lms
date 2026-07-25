@@ -16,7 +16,7 @@ import { logger } from "../lib/logger.js";
 interface RazorpayWebhookEvent {
   id?: string;
   event?: string;
-  payload?: { payment?: { entity?: { id?: string; order_id?: string } } };
+  payload?: { payment?: { entity?: { id?: string; order_id?: string; amount?: number } } };
 }
 
 export const webhookService = {
@@ -26,6 +26,7 @@ export const webhookService = {
     const payment = event.payload?.payment?.entity;
     const orderId = payment?.order_id;
     const paymentId = payment?.id;
+    const capturedAmount = payment?.amount;
 
     if (!orderId || !eventId) return; // not a payment event we track
 
@@ -34,6 +35,15 @@ export const webhookService = {
     if (type === "payment.captured" && paymentId) {
       const grant = await transactionRepository.markPaid(orderId, paymentId, eventId);
       if (grant) {
+        // Defence in depth: the order was priced server-side, so a mismatch
+        // between what we recorded and what Razorpay captured is anomalous.
+        // Log it loudly; the recorded transaction amount remains authoritative.
+        if (typeof capturedAmount === "number" && capturedAmount !== grant.amount) {
+          logger.warn(
+            { orderId, expected: grant.amount, captured: capturedAmount },
+            "razorpay amount mismatch — investigate",
+          );
+        }
         await userRepository.addEntitlement(grant.userId, grant.courseId);
         logger.info({ orderId, courseId: grant.courseId }, "entitlement granted");
       }

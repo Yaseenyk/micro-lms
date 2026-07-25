@@ -35,12 +35,14 @@ export const transactionRepository = {
     return exists !== null;
   },
 
-  /** Flip to paid exactly once; returns the grant target, or null if already paid/missing. */
+  /** Flip to paid exactly once; returns the grant target + the server-recorded
+   *  amount (for the webhook's amount-tamper check), or null if already
+   *  paid/missing. */
   async markPaid(
     orderId: string,
     paymentId: string,
     eventId: string,
-  ): Promise<{ userId: string; courseId: string } | null> {
+  ): Promise<{ userId: string; courseId: string; amount: number } | null> {
     const doc = await TransactionModel.findOneAndUpdate(
       { orderId, status: { $ne: "paid" } },
       {
@@ -49,7 +51,9 @@ export const transactionRepository = {
       },
       { new: true },
     );
-    return doc ? { userId: doc.userId.toString(), courseId: doc.courseId } : null;
+    return doc
+      ? { userId: doc.userId.toString(), courseId: doc.courseId, amount: doc.amount }
+      : null;
   },
 
   async markFailed(orderId: string, eventId: string): Promise<void> {

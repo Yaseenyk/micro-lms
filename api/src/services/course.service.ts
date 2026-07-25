@@ -8,17 +8,19 @@ import { userRepository } from "../repositories/user.repository.js";
 import { courseProgressRepository } from "../repositories/course-progress.repository.js";
 import { courseContentRepository } from "../repositories/course-content.repository.js";
 import { getCatalogCourse } from "../config/catalog.js";
-import { isFreeAccess } from "../config/env.js";
 import { AppError } from "../lib/app-error.js";
 
 /**
- * The single entitlement decision (docs/04 §0a). In free-access mode every
- * catalog course is open to any signed-in user; otherwise access is granted
- * only by the verified payment webhook writing `users.entitlements`.
+ * The single entitlement decision (docs/04 §0a). Access is decided per course
+ * by price: a free course (price 0) is open to any signed-in user; a paid
+ * course requires an entitlement, which is written ONLY by the verified payment
+ * webhook (docs/04 §9). This is the one place the rule lives.
  */
 function isEntitled(entitlements: string[], courseId: string): boolean {
-  if (isFreeAccess) return getCatalogCourse(courseId) !== null;
-  return entitlements.includes(courseId);
+  const course = getCatalogCourse(courseId);
+  if (!course) return false;
+  if (course.priceInPaise <= 0) return true; // free course
+  return entitlements.includes(courseId); // paid: must own
 }
 
 export const courseService = {

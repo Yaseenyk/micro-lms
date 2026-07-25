@@ -13,7 +13,7 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { pinoHttp } from "pino-http";
-import { env, isFreeAccess } from "./config/env.js";
+import { env, isPaymentsEnabled } from "./config/env.js";
 import { logger } from "./lib/logger.js";
 import { requestId } from "./middleware/request-id.js";
 import { baselineLimiter } from "./middleware/rate-limit.js";
@@ -50,9 +50,8 @@ export function createServer(): Express {
 
   // Razorpay webhook — RAW body, mounted BEFORE express.json so the signature
   // can be verified over the exact bytes Razorpay signed (docs/01 §2.3).
-  // Skipped in free-access mode: nothing needs to grant entitlement because
-  // every catalog course is already open (docs/04 §0a).
-  if (!isFreeAccess) {
+  // Mounted only when payments are configured (docs/04 §0a).
+  if (isPaymentsEnabled) {
     app.post(
       "/api/webhooks/razorpay",
       express.raw({ type: "*/*", limit: "1mb" }),

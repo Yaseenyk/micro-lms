@@ -57,7 +57,7 @@ export const COURSES: SeedCourse[] = [
     tagline: "Give language models a memory they can cite.",
     blurb:
       "Build RAG systems that ground answers in your own data — chunking, embeddings, vector search, and the prompt assembly that stops models from making things up.",
-    priceInPaise: 79_900,
+    priceInPaise: 0,
     hours: "5h 10m",
     outcomes: [
       "Chunk and embed a corpus without destroying meaning",
@@ -447,7 +447,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "Models that plan, use tools, and act.",
     blurb:
       "Move beyond single prompts to agents that reason, call tools, and recover from failure — with the guardrails that keep them safe and affordable.",
-    priceInPaise: 99_900,
+    priceInPaise: 0,
     hours: "6h 05m",
     outcomes: [
       "Design the reason → act → observe loop",
@@ -519,7 +519,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "The core ideas everything else is built on.",
     blurb:
       "The mental models behind every ML system — features, training, generalisation, and evaluation — taught with intuition first and just enough math.",
-    priceInPaise: 69_900,
+    priceInPaise: 0,
     hours: "5h 40m",
     outcomes: [
       "Frame a problem as supervised learning",
@@ -591,7 +591,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "Ship reliable products on top of language models.",
     blurb:
       "The engineering around the model: structured outputs, streaming, context windows, caching, and the failure handling that turns a demo into a product.",
-    priceInPaise: 89_900,
+    priceInPaise: 0,
     hours: "5h 25m",
     outcomes: [
       "Get structured, validated output every time",
@@ -662,7 +662,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
       "Treat prompts like code: patterns that work, why they work, and the evaluation loop that turns 'it felt better' into a number you can defend.",
     // Deliberate entry point: priced as a low-friction first purchase so the
     // landing page's "start for just 99" claim is literally true.
-    priceInPaise: 9_900,
+    priceInPaise: 10_000,
     hours: "4h 15m",
     outcomes: [
       "Apply reliable prompting patterns",
@@ -733,7 +733,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "The retrieval engine under every AI app.",
     blurb:
       "How embeddings and vector databases actually work — distance metrics, indexes, hybrid search, and the metadata filtering that makes results usable.",
-    priceInPaise: 69_900,
+    priceInPaise: 0,
     hours: "4h 50m",
     outcomes: [
       "Choose an embedding model and metric",
@@ -804,7 +804,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "Teach a base model your task and voice.",
     blurb:
       "When to fine-tune versus prompt or retrieve, how LoRA makes it cheap, and how to build the dataset that actually moves the needle.",
-    priceInPaise: 99_900,
+    priceInPaise: 0,
     hours: "5h 00m",
     outcomes: [
       "Decide fine-tune vs RAG vs prompt",
@@ -872,7 +872,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "Get models to production and keep them healthy.",
     blurb:
       "Packaging, serving, versioning, and monitoring models in production — plus the drift detection that tells you when reality has moved on.",
-    priceInPaise: 89_900,
+    priceInPaise: 0,
     hours: "5h 30m",
     outcomes: [
       "Serve a model behind a stable API",
@@ -936,7 +936,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "How neural networks actually learn.",
     blurb:
       "Neurons, layers, backpropagation, and the transformer — the intuition behind the architecture that powers modern AI, without drowning in notation.",
-    priceInPaise: 79_900,
+    priceInPaise: 0,
     hours: "6h 10m",
     outcomes: [
       "Understand neurons, layers, and activations",
@@ -1002,7 +1002,7 @@ async function scoreRetrieval(cases: EvalCase[], k = 5) {
     tagline: "Turn a model into something people pay for.",
     blurb:
       "The product craft around AI: scoping to the model's strengths, designing for uncertainty, keeping humans in the loop, and earning trust.",
-    priceInPaise: 59_900,
+    priceInPaise: 0,
     hours: "4h 40m",
     outcomes: [
       "Scope features to what models do well",

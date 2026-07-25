@@ -21,8 +21,12 @@ export function CoursePlayer({ courseId }: { courseId: string }) {
     access,
     progress,
     error,
+    confirming,
+    confirmTimedOut,
     reload,
     saveProgress,
+    confirmEntitlement,
+    devUnlock,
   } = useCourse(courseId);
 
   // Session still resolving.
@@ -52,7 +56,14 @@ export function CoursePlayer({ courseId }: { courseId: string }) {
 
   if (!access) {
     return (
-      <CourseSales courseId={courseId} authed />
+      <CourseSales
+        courseId={courseId}
+        authed
+        confirming={confirming}
+        confirmTimedOut={confirmTimedOut}
+        onEntitled={confirmEntitlement}
+        onDevUnlock={devUnlock}
+      />
     );
   }
 

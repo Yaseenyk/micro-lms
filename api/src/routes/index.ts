@@ -9,7 +9,7 @@ import { authRouter } from "./auth.routes.js";
 import { courseRouter } from "./course.routes.js";
 import { paymentRouter } from "./payment.routes.js";
 import { devRouter } from "./dev.routes.js";
-import { isFreeAccess, isProd } from "../config/env.js";
+import { isPaymentsEnabled, isProd } from "../config/env.js";
 import { logger } from "../lib/logger.js";
 
 export const apiRouter = Router();
@@ -18,13 +18,12 @@ apiRouter.use(healthRouter);
 apiRouter.use(authRouter);
 apiRouter.use(courseRouter);
 
-// Payments are only part of the API when the platform is not free (docs/04
-// §0a). In free-access mode every catalog course is open to any signed-in
-// user, so there is nothing to sell and no Razorpay surface to expose.
-if (!isFreeAccess) {
+// The order endpoint exists only when payments are configured (docs/04 §0a).
+// Paid courses still show a paywall without it; they just cannot be bought.
+if (isPaymentsEnabled) {
   apiRouter.use(paymentRouter);
 } else {
-  logger.info("FREE_ACCESS is on — all courses are open; payment routes not mounted.");
+  logger.warn("Razorpay keys absent — /api/payment/order not mounted; paid courses cannot be purchased.");
 }
 
 // Local development only: an entitlement bypass so the player can be exercised

@@ -5,21 +5,28 @@
 > API. **Changing a contract means changing this document first**, then the
 > code. The frontend codes against these shapes, never against raw DB documents.
 
-## 0a. Free-access mode (current default)
+## 0a. Access model — per-course pricing
 
-The platform currently runs **free**: `FREE_ACCESS` (env, defaults to `true`)
-makes every catalog course available to any authenticated user. While it is on:
+Access is decided **per course by price** (the single rule lives in
+`courseService.isEntitled`):
 
-- `POST /api/course/access` always returns `access: true` for a catalog course.
-- `POST /api/course/lesson` and `PATCH /api/course/progress` require only a
-  valid session, not an entitlement.
-- `POST /api/payment/order` and `POST /api/webhooks/razorpay` are **not mounted**,
-  and no Razorpay credentials are required to boot.
+- A **free** course (`priceInPaise === 0` in the catalog) is open to any
+  authenticated user. `access` is `true`; lesson content and progress need only
+  a valid session.
+- A **paid** course (`priceInPaise > 0`) requires an entitlement in
+  `users.entitlements`, which is written **only** by the verified payment
+  webhook (§9). Without it, `POST /api/course/access` returns `access: false`
+  and `POST /api/course/lesson` returns `404 NOT_FOUND` (access is not leaked).
 
-Setting `FREE_ACCESS=false` restores the paid flow exactly as specified in §8–9;
-the Razorpay keys then become required at boot (docs/01 §2.1 fail-fast). The
-entitlement model in `users.entitlements` is untouched either way — free mode
-bypasses the check, it does not delete the data.
+**Payments are gated on configuration.** When all three `RAZORPAY_*` secrets are
+present (`isPaymentsEnabled`), `POST /api/payment/order` and
+`POST /api/webhooks/razorpay` are mounted. When absent, the API still boots and
+paid courses still show their paywall — they just cannot be purchased until the
+keys are set (the dev-only `/api/dev/grant` bypass covers local testing).
+
+> The current catalog prices **Prompt Engineering & Evaluation** at ₹100
+> (`10_000` paise) and leaves the other nine courses free. To monetise another
+> course, give it a non-zero `priceInPaise`.
 
 ---
 

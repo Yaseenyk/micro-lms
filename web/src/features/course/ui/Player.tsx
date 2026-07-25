@@ -9,7 +9,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { getCourseMeta } from "../catalog";
+import { getCourseMeta, getNextCourse } from "../catalog";
 import { useLesson } from "../hooks/useLesson";
 import { LessonContent } from "./LessonContent";
 import type { CourseProgress, ProgressUpdate } from "@/lib/adapters/course-progress.adapter";
@@ -65,6 +65,8 @@ export function Player({
   const completedCount = progress?.lessons.filter((l) => l.completed).length ?? 0;
   const prev = activeIndex > 0 ? lessons[activeIndex - 1]! : null;
   const next = activeIndex < lessons.length - 1 ? lessons[activeIndex + 1]! : null;
+  const courseComplete = percent >= 100;
+  const nextCourse = getNextCourse(courseId);
 
   const { phase, content, error } = useLesson(courseId, active.id);
 
@@ -102,6 +104,36 @@ export function Player({
           <span className="text-xs font-semibold text-cyan">{percent}%</span>
         </div>
       </div>
+
+      {/* Course-complete banner */}
+      {courseComplete && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: EASE }}
+          className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-cyan/30 bg-gradient-to-r from-cyan/[0.08] to-purple/[0.06] px-5 py-4"
+        >
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-cyan text-ink">
+              <CheckIcon />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-zinc-50">Course complete</p>
+              <p className="text-xs text-zinc-400">
+                You finished all {lessons.length} lessons of {meta.title}.
+              </p>
+            </div>
+          </div>
+          {nextCourse && (
+            <Link
+              href={`/course/${nextCourse.id}`}
+              className="inline-flex items-center gap-2 rounded-lg bg-cyan px-4 py-2 text-sm font-semibold text-ink shadow-[0_0_20px_-6px_rgba(34,211,238,0.7)] transition-shadow hover:shadow-[0_0_26px_-4px_rgba(34,211,238,0.8)]"
+            >
+              Next: {nextCourse.title} →
+            </Link>
+          )}
+        </motion.div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
         {/* Rail */}
@@ -245,6 +277,23 @@ export function Player({
               <span className="text-zinc-500 transition-colors group-enabled:group-hover:text-cyan">→</span>
             </button>
           </div>
+
+          {/* End-of-course card: shown on the last lesson once everything's done. */}
+          {!next && courseComplete && nextCourse && (
+            <div className="mt-6 rounded-2xl border border-zinc-800 bg-white/[0.02] p-6 text-center">
+              <p className="text-xs uppercase tracking-[0.2em] text-cyan">You&apos;re done here</p>
+              <h2 className="mt-2 text-xl font-semibold text-zinc-50">Keep the momentum going</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm text-zinc-400">
+                {nextCourse.title} builds directly on what you just learned.
+              </p>
+              <Link
+                href={`/course/${nextCourse.id}`}
+                className="mt-5 inline-flex items-center gap-2 rounded-lg border border-zinc-700 px-5 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:border-ice/60 hover:text-ice"
+              >
+                Continue to {nextCourse.title} →
+              </Link>
+            </div>
+          )}
         </section>
       </div>
     </div>

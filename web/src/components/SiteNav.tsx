@@ -9,7 +9,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { PulseDot } from "./PulseDot";
+import { Logo } from "./Logo";
 
 const EASE = [0.21, 0.47, 0.32, 0.98] as const;
 
@@ -35,11 +35,8 @@ export function SiteNav() {
         className="fixed left-1/2 top-6 z-50 -translate-x-1/2"
       >
         <div className="flex items-center gap-2 rounded-full border border-zinc-800/60 bg-zinc-950/60 px-4 py-2.5 shadow-2xl shadow-cyan-900/20 backdrop-blur-md">
-          <Link href="/" className="flex items-center gap-2 pr-1">
-            <span className="whitespace-nowrap text-sm font-bold tracking-tight text-zinc-50">
-              Micro<span className="text-cyan">LMS</span>
-            </span>
-            <PulseDot />
+          <Link href="/" className="pr-1">
+            <Logo />
           </Link>
 
           <span className="hidden h-4 w-px bg-zinc-800 sm:block" />

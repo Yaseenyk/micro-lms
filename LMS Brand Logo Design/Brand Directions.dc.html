@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/nocturne-b00c6ac4-0033-4c6c-ad5c-80e4ab900c8c/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<script src="_ds/nocturne-b00c6ac4-0033-4c6c-ad5c-80e4ab900c8c/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); }
+  a { color: var(--color-accent); text-decoration: none; }
+  a:hover { color: var(--color-accent-400); }
+  @keyframes omPing { 0% { transform: scale(1); opacity: .6 } 100% { transform: scale(2.2); opacity: 0 } }
+  @keyframes omGrad { to { background-position: 200% center } }
+</style>
+</helmet>
+
+<section style="padding: 56px 56px 40px; display: flex; flex-direction: column; gap: 40px">
+
+  <div style="display: flex; flex-direction: column; gap: 14px; max-width: 820px">
+    <div style="display: flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--color-neutral-600)">
+      <span style="color: var(--color-accent)">02</span>
+      <span style="height: 1px; width: 40px; background: linear-gradient(to right, var(--color-accent), transparent)"></span>
+      <span>Round two · unique territory</span>
+    </div>
+    <h1 style="margin: 0; font-size: 40px; font-weight: 500; letter-spacing: -.02em; line-height: 1.1">Four names nobody else in dev-ed owns</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.65; color: var(--color-neutral-400); max-width: 64ch; text-wrap: pretty">Round one was too safe — <em>Corpus</em>, <em>Recall</em> and <em>Primer</em> are words the AI-tooling crowd has already worn smooth. These four come from older vocabularies: manuscript production, formal proof, and the idea that a lesson should be reduced rather than padded. Each one is a real word, each mark is built from one geometric idea, and each holds together at 16px.</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+
+    <!-- ============ 2a SUTRA ============ -->
+    <div id="2a" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">2a</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Sutra</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/ˈsuː.trə/ · noun</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">Literally <em>thread</em> — and the name for the world's oldest text-first pedagogy: teaching compressed into lines so dense they had to be unpacked slowly. Your product's exact thesis, 2,500 years early. Nobody in developer education is using it.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(34,211,238,.10), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 15px">
+          <svg width="32" height="34" viewBox="0 0 32 34" fill="none" aria-label="Sutra mark">
+            <path d="M16 1v32" stroke="#3f3f46" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="16" cy="9" r="4" fill="#05070A" stroke="#71717a" stroke-width="2"></circle>
+            <circle cx="16" cy="17" r="4.6" fill="#22D3EE"></circle>
+            <circle cx="16" cy="25" r="4" fill="#05070A" stroke="#71717a" stroke-width="2"></circle>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.035em; color: #fafafa">Sutra</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="34" height="40" viewBox="0 0 32 38" fill="none">
+            <path d="M16 1v36" stroke="#fafafa" stroke-width="2" stroke-linecap="round" opacity=".6"></path>
+            <circle cx="16" cy="8" r="4.2" fill="#05070A" stroke="#fafafa" stroke-width="2" opacity=".8"></circle>
+            <circle cx="16" cy="19" r="5" fill="#22D3EE"></circle>
+            <circle cx="16" cy="30" r="4.2" fill="#05070A" stroke="#fafafa" stroke-width="2" opacity=".8"></circle>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 11px; border: 1px solid #27272a; background: #09090b; display: grid; place-items: center">
+            <svg width="14" height="30" viewBox="0 0 14 30" fill="none">
+              <path d="M7 1v28" stroke="#fafafa" stroke-width="2" stroke-linecap="round" opacity=".55"></path>
+              <circle cx="7" cy="15" r="4.6" fill="#22D3EE"></circle>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #22D3EE; display: grid; place-items: center">
+            <svg width="12" height="24" viewBox="0 0 12 24" fill="none">
+              <path d="M6 0v24" stroke="#05070A" stroke-width="2.4" stroke-linecap="round"></path>
+              <circle cx="6" cy="12" r="4" fill="#05070A"></circle>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="10" height="20" viewBox="0 0 12 24" fill="none">
+              <path d="M6 0v24" stroke="#fafafa" stroke-width="2" stroke-linecap="round" opacity=".55"></path>
+              <circle cx="6" cy="12" r="3.6" fill="#22D3EE"></circle>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: #fafafa">Sutra</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“One thread, all the way through.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">mark: thread + three beads, the current one filled<br>sutra.school · sutra.courses · readsutra.com</span>
+      </div>
+    </div>
+
+    <!-- ============ 2b LEMMA ============ -->
+    <div id="2b" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">2b</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Lemma</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/ˈlem.ə/ · noun</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">In maths, the small result you prove on the way to the big one. In NLP, the root form a word reduces to. Both meanings say the same thing about your courses: you go through the steps, and each step is worth something on its own.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(34,211,238,.10), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 16px">
+          <svg width="30" height="34" viewBox="0 0 28 34" fill="none" aria-label="Lemma mark">
+            <path d="M5 2v30" stroke="#fafafa" stroke-width="2.6" stroke-linecap="round" opacity=".9"></path>
+            <path d="M5 17h20" stroke="#22D3EE" stroke-width="2.6" stroke-linecap="round"></path>
+            <path d="M5 9h11M5 25h11" stroke="#3f3f46" stroke-width="2.6" stroke-linecap="round"></path>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.035em; color: #fafafa">Lemma</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="36" height="40" viewBox="0 0 28 34" fill="none">
+            <path d="M5 2v30" stroke="#fafafa" stroke-width="2.8" stroke-linecap="round" opacity=".9"></path>
+            <path d="M5 17h20" stroke="#22D3EE" stroke-width="2.8" stroke-linecap="round"></path>
+            <path d="M5 9h11M5 25h11" stroke="#fafafa" stroke-width="2.8" stroke-linecap="round" opacity=".35"></path>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 11px; border: 1px solid rgba(34,211,238,.45); background: rgba(34,211,238,.07); display: grid; place-items: center">
+            <svg width="20" height="22" viewBox="0 0 22 24" fill="none">
+              <path d="M4 2v20" stroke="#67E8F9" stroke-width="2.6" stroke-linecap="round"></path>
+              <path d="M4 12h14" stroke="#67E8F9" stroke-width="2.6" stroke-linecap="round"></path>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #22D3EE; display: grid; place-items: center">
+            <svg width="18" height="20" viewBox="0 0 22 24" fill="none">
+              <path d="M4 2v20" stroke="#05070A" stroke-width="3" stroke-linecap="round"></path>
+              <path d="M4 12h14" stroke="#05070A" stroke-width="3" stroke-linecap="round"></path>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="15" height="17" viewBox="0 0 28 34" fill="none">
+              <path d="M5 3v28" stroke="#fafafa" stroke-width="3.4" stroke-linecap="round"></path>
+              <path d="M5 17h19" stroke="#22D3EE" stroke-width="3.4" stroke-linecap="round"></path>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: #fafafa">Lemma</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“Prove it one step at a time.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">mark: the turnstile ⊢ — “therefore”, with the proved line lit<br>lemma.school · lemma.courses · uselemma.com</span>
+      </div>
+    </div>
+
+    <!-- ============ 2c QUIRE ============ -->
+    <div id="2c" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">2c</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Quire</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/ˈkwaɪ.ə/ · noun</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">A bookbinder's word: the gathering of folded sheets that becomes one section of a book. A quire is exactly what a course is — a bundle of pages, complete in itself, bound into something larger. Rare, short, and the Q makes it a gift to draw.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(168,85,247,.09), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 15px">
+          <svg width="36" height="34" viewBox="0 0 34 32" fill="none" aria-label="Quire mark">
+            <path d="M17 9 3 13.5v14L17 23z" stroke="#71717a" stroke-width="2" stroke-linejoin="round"></path>
+            <path d="M17 9l14 4.5v14L17 23z" stroke="#22D3EE" stroke-width="2" stroke-linejoin="round"></path>
+            <path d="M17 9v14" stroke="#3f3f46" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.035em; color: #fafafa">Quire</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="44" height="40" viewBox="0 0 34 30" fill="none">
+            <path d="M17 7 3 11.5v14L17 21z" stroke="#fafafa" stroke-width="2" stroke-linejoin="round" opacity=".75"></path>
+            <path d="M17 7l14 4.5v14L17 21z" stroke="#22D3EE" stroke-width="2" stroke-linejoin="round"></path>
+            <path d="M17 7v14" stroke="#fafafa" stroke-width="2" stroke-linecap="round" opacity=".35"></path>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(140deg, #22D3EE, #A855F7); display: grid; place-items: center">
+            <span style="font-size: 23px; font-weight: 800; letter-spacing: -.04em; color: #05070A">Q</span>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #27272a; background: #09090b; display: grid; place-items: center">
+            <svg width="24" height="21" viewBox="0 0 34 30" fill="none">
+              <path d="M17 7 3 11.5v14L17 21z" stroke="#fafafa" stroke-width="3" stroke-linejoin="round" opacity=".7"></path>
+              <path d="M17 7l14 4.5v14L17 21z" stroke="#22D3EE" stroke-width="3" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="19" height="17" viewBox="0 0 34 30" fill="none">
+              <path d="M17 7 3 11.5v14L17 21z" stroke="#fafafa" stroke-width="2.6" stroke-linejoin="round" opacity=".7"></path>
+              <path d="M17 7l14 4.5v14L17 21z" stroke="#22D3EE" stroke-width="2.6" stroke-linejoin="round"></path>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: #fafafa">Quire</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“A course is a gathering of pages.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">mark: an open spread seen from above, recto lit<br>quire.school · quire.courses · readquire.com</span>
+      </div>
+    </div>
+
+    <!-- ============ 2d PITH ============ -->
+    <div id="2d" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">2d</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Pith</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/pɪθ/ · noun</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">The core at the centre of a stem — and the root of <em>pithy</em>: terse, and full of meaning. Four letters, one syllable, and a direct attack on the forty-minute video for a three-minute idea. The bluntest name here and the easiest to say out loud.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(34,211,238,.11), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 14px">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-label="Pith mark">
+            <circle cx="16" cy="16" r="14" stroke="#3f3f46" stroke-width="2"></circle>
+            <circle cx="16" cy="16" r="8.5" stroke="#71717a" stroke-width="2"></circle>
+            <circle cx="16" cy="16" r="4" fill="#22D3EE"></circle>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.04em; color: #fafafa">Pith</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14.5" stroke="#fafafa" stroke-width="1.8" opacity=".45"></circle>
+            <circle cx="16" cy="16" r="9" stroke="#fafafa" stroke-width="1.8" opacity=".8"></circle>
+            <circle cx="16" cy="16" r="4.4" fill="#22D3EE"></circle>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 9999px; background: #22D3EE; display: grid; place-items: center; box-shadow: 0 0 22px -6px rgba(34,211,238,.7)">
+            <span style="font-size: 22px; font-weight: 800; letter-spacing: -.05em; color: #05070A">P</span>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #27272a; background: #09090b; display: grid; place-items: center">
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="13" stroke="#fafafa" stroke-width="2.6" opacity=".55"></circle>
+              <circle cx="16" cy="16" r="5" fill="#22D3EE"></circle>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="17" height="17" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" stroke="#fafafa" stroke-width="2.4" opacity=".5"></circle>
+              <circle cx="16" cy="16" r="5" fill="#22D3EE"></circle>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.025em; color: #fafafa">Pith</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“No filler.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">mark: a stem in cross-section, the core lit<br>pith.school · pith.courses · readpith.com</span>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="margin: 0; font-size: 13px; line-height: 1.6; color: var(--color-neutral-600); max-width: 72ch">Pick of the four: <a href="#2a">2a</a> Sutra — the meaning is a perfect fit, the thread-and-bead mark doubles as your lesson-progress indicator inside the course player, and it is genuinely unclaimed. <a href="#2d">2d</a> Pith if you want the shortest, bluntest option. Round one is below for comparison.</p>
+
+</section>
+
+<section style="padding: 16px 56px 96px; display: flex; flex-direction: column; gap: 40px; opacity: .62">
+
+  <div style="display: flex; flex-direction: column; gap: 14px; max-width: 780px">
+    <div style="display: flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--color-neutral-600)">
+      <span style="color: var(--color-accent)">01</span>
+      <span style="height: 1px; width: 40px; background: linear-gradient(to right, var(--color-accent), transparent)"></span>
+      <span>Naming &amp; identity</span>
+    </div>
+    <h1 style="margin: 0; font-size: 40px; font-weight: 500; letter-spacing: -.02em; line-height: 1.1">Four names for a text-first AI school</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.65; color: var(--color-neutral-400); max-width: 62ch; text-wrap: pretty">Each is a real English word with a second, technical reading — sharp enough for engineers, obvious enough that a stranger knows it teaches. Every direction ships a wordmark, a symbol, a monogram, a favicon, and the mark sitting in your actual nav (rebuilt from <span style="font-family: 'Fira Code', monospace; font-size: 13px; color: var(--color-neutral-300)">SiteNav.tsx</span>, your palette untouched).</p>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start">
+
+    <!-- ============ 1a CORPUS ============ -->
+    <div id="1a" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">1a</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Corpus</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/ˈkɔː.pəs/ · noun</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">A complete body of written work — and the word every ML engineer already uses for the text a model learns from. The whole product in one word: this is a school made of text.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(34,211,238,.10), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 14px">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-label="Corpus mark">
+            <rect x="1" y="1" width="30" height="30" rx="8" stroke="#27272a"></rect>
+            <path d="M9 10h14" stroke="#22D3EE" stroke-width="2.2" stroke-linecap="round"></path>
+            <path d="M9 15h14M9 20h14M9 25h7" stroke="#fafafa" stroke-width="2.2" stroke-linecap="round" opacity=".85"></path>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.035em; color: #fafafa">corpus</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <path d="M9 8h14" stroke="#22D3EE" stroke-width="2.6" stroke-linecap="round"></path>
+            <path d="M9 14h14M9 20h14M9 26h7" stroke="#fafafa" stroke-width="2.6" stroke-linecap="round" opacity=".85"></path>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 11px; background: #22D3EE; display: grid; place-items: center; box-shadow: 0 0 22px -6px rgba(34,211,238,.7)">
+            <span style="font-size: 24px; font-weight: 800; letter-spacing: -.04em; color: #05070A">C</span>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #27272a; background: #09090b; display: grid; place-items: center">
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+              <path d="M8 8h16" stroke="#22D3EE" stroke-width="3.4" stroke-linecap="round"></path>
+              <path d="M8 16h16M8 24h9" stroke="#fafafa" stroke-width="3.4" stroke-linecap="round"></path>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="17" height="17" viewBox="0 0 32 32" fill="none">
+              <path d="M9 8h14" stroke="#22D3EE" stroke-width="3" stroke-linecap="round"></path>
+              <path d="M9 16h14M9 24h8" stroke="#fafafa" stroke-width="3" stroke-linecap="round"></path>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: #fafafa">corpus</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“Read the whole corpus.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">corpus.courses · readcorpus.com · corpus.school</span>
+      </div>
+    </div>
+
+    <!-- ============ 1b RECALL ============ -->
+    <div id="1b" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">1b</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Recall</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/rɪˈkɔːl/ · verb, noun</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">What learning is for — and the metric every retrieval system is judged on. It names the product's subject (RAG, search) and its promise (you remember this) in the same five letters.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(34,211,238,.10), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 14px">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-label="Recall mark">
+            <rect x="4.5" y="9.5" width="23" height="18" rx="4" stroke="#3f3f46" stroke-width="2"></rect>
+            <path d="M16 22V5" stroke="#22D3EE" stroke-width="2.4" stroke-linecap="round"></path>
+            <path d="m10.5 10.5 5.5-5.5 5.5 5.5" stroke="#22D3EE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.035em; color: #fafafa">Recall</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <rect x="4.5" y="9.5" width="23" height="18" rx="4" stroke="#fafafa" stroke-width="2" opacity=".85"></rect>
+            <path d="M16 22V5" stroke="#22D3EE" stroke-width="2.4" stroke-linecap="round"></path>
+            <path d="m10.5 10.5 5.5-5.5 5.5 5.5" stroke="#22D3EE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 11px; border: 1px solid rgba(34,211,238,.45); background: rgba(34,211,238,.08); display: grid; place-items: center">
+            <span style="font-size: 24px; font-weight: 800; letter-spacing: -.04em; color: #67E8F9">R</span>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #22D3EE; display: grid; place-items: center">
+            <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+              <rect x="5" y="10" width="22" height="17" rx="4" stroke="#05070A" stroke-width="2.6"></rect>
+              <path d="M16 21V5.5" stroke="#05070A" stroke-width="2.8" stroke-linecap="round"></path>
+              <path d="m11 10.5 5-5 5 5" stroke="#05070A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="17" height="17" viewBox="0 0 32 32" fill="none">
+              <rect x="4.5" y="10" width="23" height="17.5" rx="4" stroke="#fafafa" stroke-width="2.4" opacity=".85"></rect>
+              <path d="M16 22V5" stroke="#22D3EE" stroke-width="2.8" stroke-linecap="round"></path>
+              <path d="m10.5 10.5 5.5-5.5 5.5 5.5" stroke="#22D3EE" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: #fafafa">Recall</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“Retrieval you can keep.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">recall.school · recall.courses · userecall.com</span>
+      </div>
+    </div>
+
+    <!-- ============ 1c PRIMER ============ -->
+    <div id="1c" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">1c</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Primer</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/ˈprɪmə/ · noun</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">The oldest word for a small book that teaches a subject from zero — and what engineers call the text you prime a model with. Unmistakably a learning product; unmistakably made of writing.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(168,85,247,.10), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 14px">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-label="Primer mark">
+            <rect x="4" y="4" width="24" height="24" rx="5" stroke="#3f3f46" stroke-width="2"></rect>
+            <rect x="10" y="10" width="18" height="18" rx="4" fill="#05070A" stroke="#22D3EE" stroke-width="2"></rect>
+            <path d="M14.5 17.5h9M14.5 22h5.5" stroke="#fafafa" stroke-width="1.8" stroke-linecap="round" opacity=".8"></path>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.035em; color: #fafafa">Primer</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <rect x="3" y="3" width="24" height="24" rx="5" stroke="#fafafa" stroke-width="2" opacity=".8"></rect>
+            <rect x="9" y="9" width="20" height="20" rx="4" fill="#05070A" stroke="#22D3EE" stroke-width="2"></rect>
+            <path d="M14 17h10M14 22h6" stroke="#fafafa" stroke-width="1.8" stroke-linecap="round" opacity=".8"></path>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(135deg, #22D3EE, #A855F7); display: grid; place-items: center">
+            <span style="font-size: 24px; font-weight: 800; letter-spacing: -.04em; color: #05070A">P</span>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #27272a; background: #09090b; display: grid; place-items: center">
+            <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+              <rect x="3" y="3" width="21" height="21" rx="5" stroke="#fafafa" stroke-width="2.6" opacity=".8"></rect>
+              <rect x="11" y="11" width="18" height="18" rx="4" fill="#09090b" stroke="#22D3EE" stroke-width="2.6"></rect>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="17" height="17" viewBox="0 0 32 32" fill="none">
+              <rect x="3" y="3" width="22" height="22" rx="5" stroke="#fafafa" stroke-width="2.4" opacity=".8"></rect>
+              <rect x="10" y="10" width="19" height="19" rx="4" fill="#09090b" stroke="#22D3EE" stroke-width="2.4"></rect>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: #fafafa">Primer</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“Start from first principles.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">primer.courses · readprimer.com · primer.school</span>
+      </div>
+    </div>
+
+    <!-- ============ 1d ATTEND ============ -->
+    <div id="1d" style="width: 560px; display: flex; flex-direction: column; gap: 16px; padding: var(--space-8); border: 1px solid var(--color-neutral-900); border-radius: var(--radius-md); background: var(--color-surface)">
+      <div style="display: flex; align-items: baseline; gap: 12px">
+        <span class="tag tag-outline" style="font-family: 'Fira Code', monospace; font-size: 11px">1d</span>
+        <h2 style="margin: 0; font-size: 26px; font-weight: 500; letter-spacing: -.01em">Attend</h2>
+        <span style="font-size: 12px; color: var(--color-neutral-600)">/əˈtend/ · verb</span>
+      </div>
+      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: var(--color-neutral-400)">To attend a course; to attend to something closely — and the mechanism the whole modern stack is built on. The most insider of the four, and the only one that is also a verb you can say to a student.</p>
+
+      <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(30rem 20rem at 50% -30%, rgba(34,211,238,.10), transparent 60%); padding: 40px 32px; display: flex; align-items: center; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 14px">
+          <svg width="34" height="34" viewBox="0 0 32 32" fill="none" aria-label="Attend mark">
+            <path d="M8 7.5 24 16M8 16h16M8 24.5 24 16" stroke="#3f3f46" stroke-width="1.8"></path>
+            <path d="M8 16h16" stroke="#22D3EE" stroke-width="2.2"></path>
+            <circle cx="8" cy="7.5" r="2.6" fill="#05070A" stroke="#71717a" stroke-width="1.8"></circle>
+            <circle cx="8" cy="16" r="2.6" fill="#05070A" stroke="#22D3EE" stroke-width="1.8"></circle>
+            <circle cx="8" cy="24.5" r="2.6" fill="#05070A" stroke="#71717a" stroke-width="1.8"></circle>
+            <circle cx="24" cy="16" r="3.4" fill="#22D3EE"></circle>
+          </svg>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -.035em; color: #fafafa">Attend</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <svg width="40" height="40" viewBox="0 0 32 32" fill="none">
+            <path d="M7 5.5 25 16M7 16h18M7 26.5 25 16" stroke="#fafafa" stroke-width="1.8" opacity=".55"></path>
+            <path d="M7 16h18" stroke="#22D3EE" stroke-width="2.2"></path>
+            <circle cx="7" cy="5.5" r="2.8" fill="#05070A" stroke="#fafafa" stroke-width="1.8" opacity=".7"></circle>
+            <circle cx="7" cy="16" r="2.8" fill="#05070A" stroke="#22D3EE" stroke-width="1.8"></circle>
+            <circle cx="7" cy="26.5" r="2.8" fill="#05070A" stroke="#fafafa" stroke-width="1.8" opacity=".7"></circle>
+            <circle cx="25" cy="16" r="3.6" fill="#22D3EE"></circle>
+          </svg>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">symbol</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 40px; height: 40px; border-radius: 11px; border: 1px solid rgba(103,232,249,.4); background: #09090b; display: grid; place-items: center">
+            <span style="font-size: 24px; font-weight: 800; letter-spacing: -.04em; background: linear-gradient(to right, #22D3EE, #A855F7, #22D3EE); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: omGrad 4s linear infinite">A</span>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">monogram</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; border: 1px solid #27272a; border-radius: 8px; background: #05070A">
+          <div style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #27272a; background: #09090b; display: grid; place-items: center">
+            <svg width="21" height="21" viewBox="0 0 32 32" fill="none">
+              <path d="M8 7 24 16M8 16h16M8 25 24 16" stroke="#fafafa" stroke-width="2.4" opacity=".5"></path>
+              <path d="M8 16h16" stroke="#22D3EE" stroke-width="2.8"></path>
+              <circle cx="24" cy="16" r="4" fill="#22D3EE"></circle>
+            </svg>
+          </div>
+          <span style="font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #71717a">favicon</span>
+        </div>
+      </div>
+
+      <div style="border-radius: 8px; border: 1px solid #27272a; background: #05070A; background-image: radial-gradient(34rem 22rem at 50% -40%, rgba(34,211,238,.09), transparent 60%), radial-gradient(28rem 22rem at 100% 10%, rgba(168,85,247,.07), transparent 60%); padding: 28px 20px; display: flex; justify-content: center">
+        <div style="display: flex; align-items: center; gap: 8px; border-radius: 9999px; border: 1px solid rgba(39,39,42,.6); background: rgba(9,9,11,.6); padding: 10px 16px; box-shadow: 0 25px 50px -12px rgba(22,78,99,.2); backdrop-filter: blur(12px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding-right: 4px">
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+              <path d="M8 7 24 16M8 16h16M8 25 24 16" stroke="#fafafa" stroke-width="2" opacity=".5"></path>
+              <path d="M8 16h16" stroke="#22D3EE" stroke-width="2.4"></path>
+              <circle cx="24" cy="16" r="3.6" fill="#22D3EE"></circle>
+            </svg>
+            <span style="white-space: nowrap; font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: #fafafa">Attend</span>
+            <span style="position: relative; display: inline-flex; width: 10px; height: 10px">
+              <span style="position: absolute; inset: 0; border-radius: 9999px; background: #67E8F9; animation: omPing 1.8s ease-out infinite"></span>
+              <span style="position: relative; width: 10px; height: 10px; border-radius: 9999px; background: #67E8F9"></span>
+            </span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 2px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Courses</span>
+          </div>
+          <span style="height: 16px; width: 1px; background: #27272a"></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="border-radius: 9999px; padding: 6px 12px; font-size: 14px; color: #a1a1aa">Log in</span>
+            <span style="white-space: nowrap; border-radius: 9999px; background: #22D3EE; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #05070A; box-shadow: 0 0 20px -6px rgba(34,211,238,.7)">Get started</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px">
+        <span style="font-size: 14px; color: var(--color-neutral-300)">“Attention, taught.”</span>
+        <span style="font-family: 'Fira Code', monospace; font-size: 12px; color: var(--color-neutral-600)">attend.school · attend.courses · attendai.com</span>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="margin: 0; font-size: 13px; line-height: 1.6; color: var(--color-neutral-600); max-width: 70ch">Recommendation: <a href="#1a">1a</a> Corpus — the double meaning is exact (a body of text / a training corpus), it reads as a school without saying "LMS", and the paragraph mark works at 16px. <a href="#1b">1b</a> is the safest if you want the name to say "learning" first. Tell me which to take further and I'll build the full lockup set, the favicon files, and the nav swap.</p>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}"></script>
+</body>
+</html>

@@ -20,34 +20,17 @@ const EnvSchema = z
     JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
     JWT_EXPIRES_IN: z.string().default("15m"),
 
-    // Access model (docs/04 §0a). Free by default: every catalog course is open
-    // to any signed-in user and the payment surface is not mounted. Set
-    // FREE_ACCESS=false to restore the paid Razorpay flow.
-    FREE_ACCESS: z
-      .string()
-      .optional()
-      .transform((v) => v !== "false"),
-
-    // Payments (docs/01 §2.3) — required only when FREE_ACCESS is false.
+    // Payments (docs/01 §2.3, docs/04 §0a). Optional so the API boots without
+    // them; when all three are present the payment surface (order + webhook)
+    // is mounted. Access itself is decided per course by price, independent of
+    // whether payments are configured — a paid course simply cannot be
+    // purchased until the keys are set (the dev bypass covers local testing).
     RAZORPAY_KEY_ID: z.string().min(1).optional(),
     RAZORPAY_KEY_SECRET: z.string().min(1).optional(),
     RAZORPAY_WEBHOOK_SECRET: z.string().min(1).optional(),
 
     // Security (docs/01 §2.4) — restrict CORS to the known frontend origin.
     CORS_ORIGIN: z.string().url(),
-  })
-  .superRefine((cfg, ctx) => {
-    // Fail fast (docs/01 §2.1): a paid deployment must carry its payment keys.
-    if (cfg.FREE_ACCESS) return;
-    for (const key of ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET"] as const) {
-      if (!cfg[key]) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: [key],
-          message: "is required when FREE_ACCESS is false",
-        });
-      }
-    }
   });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -72,5 +55,11 @@ export const env = loadEnv();
 
 export const isProd = env.NODE_ENV === "production";
 
-/** Every catalog course is open to any signed-in user (docs/04 §0a). */
-export const isFreeAccess = env.FREE_ACCESS;
+/**
+ * Payments are live only when all three Razorpay secrets are present. Gates
+ * mounting of /api/payment/order and the webhook (docs/04 §0a). When false, a
+ * paid course still shows its paywall but cannot be purchased.
+ */
+export const isPaymentsEnabled = Boolean(
+  env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET && env.RAZORPAY_WEBHOOK_SECRET,
+);

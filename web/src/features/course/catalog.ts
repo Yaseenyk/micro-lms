@@ -118,7 +118,7 @@ export const COURSES: CourseMeta[] = [
     tagline: "Make prompts a controlled variable, not a guess.",
     blurb:
       "Treat prompts like code: patterns that work, why they work, and the evaluation loop that turns 'it felt better' into a number you can defend.",
-    priceLabel: "Free",
+    priceLabel: "₹100",
     hours: "3h 30m",
     starter: true,
     outcomes: [
@@ -251,9 +251,29 @@ export function getAllCourses(): CourseMeta[] {
   return COURSES;
 }
 
-/** The designated entry course (cheapest, flagged) used by the hero CTA. */
+/** The featured flagship course used by the hero CTA. */
 export function getStarterCourse(): CourseMeta {
   return COURSES.find((c) => c.starter) ?? COURSES[0]!;
+}
+
+/** A course is paid when its price label is not the free sentinel. */
+export function isPaidCourse(course: CourseMeta): boolean {
+  return course.priceLabel.trim().toLowerCase() !== "free";
+}
+
+// Curated learning path: what to suggest after finishing a course. Falls back
+// to the next catalog entry so every course has a "what's next".
+const NEXT: Record<string, string> = {
+  "prompt-engineering": "rag-systems",
+  "rag-systems": "vector-search",
+  "vector-search": "agentic-ai",
+};
+
+export function getNextCourse(courseId: string): CourseMeta | null {
+  const explicit = NEXT[courseId];
+  if (explicit && BY_ID[explicit]) return BY_ID[explicit];
+  const idx = COURSES.findIndex((c) => c.id === courseId);
+  return idx >= 0 && idx < COURSES.length - 1 ? COURSES[idx + 1]! : null;
 }
 
 export function courseIds(): string[] {
