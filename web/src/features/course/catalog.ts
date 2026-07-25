@@ -96,23 +96,24 @@ export const COURSES: CourseMeta[] = [
   },
   {
     id: "llm-engineering",
-    title: "LLM Application Engineering",
-    tagline: "Ship reliable products on top of language models.",
+    title: "LLM Engineering",
+    tagline: "How language models work under the hood, and how to serve them.",
     blurb:
-      "The engineering around the model: structured outputs, streaming, context windows, caching, and the failure handling that turns a demo into a product.",
+      "From the transformer up: attention and the KV cache, tokenization, inference optimization, and the serving stack that turns raw weights into a fast, cheap API.",
     priceLabel: "Free",
-    hours: "5h 25m",
+    hours: "3h 40m",
     outcomes: [
-      "Get structured, validated output every time",
-      "Manage context windows and token budgets",
-      "Stream responses and handle failures",
-      "Cache and cut latency + cost",
+      "Derive attention and multi-head from first principles",
+      "Understand RoPE, causal masking, and the KV cache",
+      "Optimize inference: batching, quantization, decoding",
+      "Serve models for throughput, latency, and cost",
     ],
     lessons: [
-      L("les_1", "Structured output you can trust", 25),
-      L("les_2", "Context windows and token budgets", 27),
-      L("les_3", "Streaming and graceful failure", 24),
-      L("les_4", "Caching and cost control", 26),
+      // Module 1 authored; les_2–4 hold provisional topics until their modules land.
+      L("les_1", "The Transformer Architecture & Attention Mechanics", 58),
+      L("les_2", "Inference Optimization & the Serving Stack", 30),
+      L("les_3", "Tokenization, Sampling & Decoding Strategies", 28),
+      L("les_4", "Quantization, Fine-Tuning & Model Compression", 30),
     ],
   },
   {
