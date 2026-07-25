@@ -3,6 +3,8 @@
  * from the database (docs/03 §4 `markdown` block) with the site's typography.
  *
  *  - remark-gfm       → tables, strikethrough, task lists, autolinks
+ *  - remark-math      → $inline$ and $$display$$ math delimiters
+ *  - rehype-katex     → renders the math to KaTeX (self-contained CSS/fonts)
  *  - rehype-highlight → hljs-* classes on fenced code (themed in globals.css)
  *  - code override    → ```mermaid fences become SVG diagrams, everything else
  *                       falls through to a styled, highlighted code block
@@ -12,9 +14,13 @@
  */
 "use client";
 
+import "katex/dist/katex.min.css";
+
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import rehypeHighlight from "rehype-highlight";
 import dynamic from "next/dynamic";
 
@@ -138,8 +144,11 @@ export function LessonMarkdown({ markdown }: { markdown: string }) {
   return (
     <div className="lesson-prose">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeHighlight, { detect: true, ignoreMissing: true }]]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[
+          [rehypeKatex, { throwOnError: false }],
+          [rehypeHighlight, { detect: true, ignoreMissing: true }],
+        ]}
         components={components}
       >
         {markdown}

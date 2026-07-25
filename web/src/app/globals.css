@@ -130,3 +130,23 @@
     font-weight: 600;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   KaTeX math (remark-math + rehype-katex) inside markdown lessons. KaTeX text
+   inherits currentColor, so inline math adopts the prose colour automatically.
+   These rules just keep long display equations from overflowing the page.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .lesson-prose .katex {
+    font-size: 1.02em;
+  }
+  .lesson-prose .katex-display {
+    margin: 1.4rem 0;
+    padding: 0.35rem 0.25rem;
+    overflow-x: auto; /* a wide equation scrolls in place, never the page */
+    overflow-y: hidden;
+  }
+  .lesson-prose .katex-display > .katex {
+    white-space: nowrap;
+  }
+}

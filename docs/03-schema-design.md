@@ -164,9 +164,12 @@ is the paid product — reads are gated by entitlement (doc 04 §7b).
 **The `markdown` block** carries a whole authored module as one GitHub-Flavoured
 Markdown string — headings, tables, blockquotes, nested lists, and fenced code.
 It is rendered at runtime on the client (`react-markdown` + `remark-gfm`), with
-`rehype-highlight` colouring fenced code and ` ```mermaid ` fences rendered as
-SVG diagrams. This is the paste-a-module path: author a `.mdx` file, seed it with
-`npm run seed:md`, and it renders with no rebuild.
+`rehype-highlight` colouring fenced code, ` ```mermaid ` fences rendered as SVG
+diagrams, and `remark-math` + `rehype-katex` rendering LaTeX math — `$inline$`
+and `$$display$$` — via KaTeX (self-contained CSS/fonts, no network). This is the
+paste-a-module path: author a `.mdx` file, seed it with `npm run seed:md`, and it
+renders with no rebuild. **Diagrams must be authored as ` ```mermaid ` fenced code
+blocks — not `<Mermaid>` JSX**, which the markdown-string renderer cannot execute.
 
 > Blocks and markdown compose freely. A lesson may be a single `markdown` block,
 > or structured blocks with a `markdown` block embedded for a long passage.
