@@ -152,9 +152,9 @@ export const COURSES: CourseMeta[] = [
       "Keep an index fresh and correct",
     ],
     lessons: [
-      // Module 1 authored; les_2–4 hold earlier lessons until their modules land.
+      // Modules 1–2 authored; les_3–4 hold earlier lessons until their modules land.
       L("les_1", "Vector Math, Embedding Spaces & High-Dimensional Geometry", 56),
-      L("les_2", "Approximate nearest-neighbour indexes", 28),
+      L("les_2", "Vector Indexing & Algorithms: ANN, IVF, PQ & HNSW", 54),
       L("les_3", "Hybrid search and filtering", 27),
       L("les_4", "Keeping an index fresh", 25),
     ],
@@ -248,21 +248,22 @@ export const COURSES: CourseMeta[] = [
 /**
  * Sequential 10-course roadmap — the intended learning order surfaced across the
  * site (homepage catalog order, "what's next" after finishing a course). The
- * applied-LLM track comes first (build things), then foundations/theory, then
- * ops and product. This array is the single source of order; reorder here to
- * reshape the whole roadmap. `authored` markers track content build-out.
+ * applied/product track comes first (build things people use), then the heavier
+ * ML theory and ops track fills the back half. This array is the single source
+ * of order; reorder here to reshape the whole roadmap. `authored` markers track
+ * content build-out.
  */
 export const ROADMAP: readonly string[] = [
   "prompt-engineering", //  1 · starter, authored — the low-friction entry point
   "rag-systems",        //  2 · authored
   "agentic-ai",         //  3 · authored
   "vector-search",      //  4 · authoring in progress
-  "llm-engineering",    //  5
-  "fine-tuning",        //  6
-  "ml-foundations",     //  7
-  "deep-learning",      //  8
-  "mlops",              //  9
-  "ai-products",        // 10
+  "ai-products",        //  5 · product craft (UX & streaming) before the ML deep dives
+  "llm-engineering",    //  6
+  "fine-tuning",        //  7 · heavier ML / ops track fills the back half
+  "ml-foundations",     //  8
+  "deep-learning",      //  9
+  "mlops",              // 10
 ];
 
 const roadmapRank = (id: string): number => {
