@@ -58,7 +58,7 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "Move beyond single prompts to agents that reason, call tools, and recover from failure — with the guardrails that keep them safe and affordable.",
     priceLabel: "Free",
-    hours: "6h 05m",
+    hours: "3h 24m",
     outcomes: [
       "Design the reason → act → observe loop",
       "Expose tools an agent can call reliably",
@@ -66,11 +66,11 @@ export const COURSES: CourseMeta[] = [
       "Debug and evaluate multi-step runs",
     ],
     lessons: [
-      // Modules 1–3 authored; les_4 holds the earlier lesson until its module lands.
+      // All four modules authored — course complete.
       L("les_1", "Core Agentic Architectures & Reasoning Loops", 50),
       L("les_2", "Tool Use & Function Calling", 48),
       L("les_3", "Memory & State Management", 52),
-      L("les_4", "Guardrails, cost, and evaluation", 29),
+      L("les_4", "Multi-Agent Systems & Human-in-the-Loop", 54),
     ],
   },
   {

