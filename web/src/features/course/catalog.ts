@@ -237,7 +237,8 @@ export const COURSES: CourseMeta[] = [
       "Build trust, safety, and feedback in",
     ],
     lessons: [
-      L("les_1", "Scoping to the model's strengths", 22),
+      // Module 1 authored; les_2–4 hold earlier lessons until their modules land.
+      L("les_1", "Real-Time UI & Streaming Architectures", 48),
       L("les_2", "Designing for uncertainty", 24),
       L("les_3", "Humans in the loop", 23),
       L("les_4", "Trust, safety, and feedback", 25),
