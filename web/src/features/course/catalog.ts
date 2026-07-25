@@ -131,7 +131,7 @@ export const COURSES: CourseMeta[] = [
       L("les_1", "The Core Mechanics", 48),
       L("les_2", "Advanced Prompt Pipelines & Guardrails", 52),
       L("les_3", "Evaluation & Iteration", 52),
-      L("les_4", "Optimization & Deployment", 48),
+      L("les_4", "Optimization & Deployment", 50),
     ],
   },
   {
