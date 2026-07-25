@@ -7,6 +7,18 @@
     scroll-behavior: smooth;
   }
 
+  /* Keyboard focus gets a subtle on-brand cyan ring; mouse/touch focus shows
+     nothing — this replaces the browser's default orange/white outline (e.g. the
+     ring that lingered on the Pith logo after clicking it) while keeping the app
+     accessible to keyboard users. */
+  :focus-visible {
+    outline: 2px solid rgb(34 211 238 / 0.75);
+    outline-offset: 3px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
   body {
     @apply text-zinc-100 antialiased;
     /* A wide widget must never push the whole page into horizontal scroll on

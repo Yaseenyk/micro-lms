@@ -35,7 +35,7 @@ export function SiteNav() {
         className="fixed left-1/2 top-6 z-50 -translate-x-1/2"
       >
         <div className="flex items-center gap-2 rounded-full border border-zinc-800/60 bg-zinc-950/60 px-4 py-2.5 shadow-2xl shadow-cyan-900/20 backdrop-blur-md">
-          <Link href="/" className="pr-1">
+          <Link href={status === "authenticated" ? "/dashboard" : "/"} className="pr-1">
             <Logo />
           </Link>
 

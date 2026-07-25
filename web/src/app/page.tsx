@@ -6,7 +6,8 @@ import { SectionLabel } from "@/components/SectionLabel";
 import { HeroGraphic } from "@/components/HeroGraphic";
 import { CourseCard } from "@/features/course/ui/CourseCard";
 import { getAllCourses, getStarterCourse } from "@/features/course/catalog";
-import { CodeIcon, LayersIcon, RouteIcon, CheckIcon, ArrowRightIcon } from "@/components/Icons";
+import { CodeIcon, LayersIcon, RouteIcon, CheckIcon } from "@/components/Icons";
+import { HeroActions, FinalCta } from "@/components/HomeAuthCtas";
 
 const HOW = [
   {
@@ -60,15 +61,7 @@ export default function HomePage() {
             your own pace. No video to scrub through.
           </p>
 
-          <div className="mt-9 flex flex-wrap items-center gap-4">
-            <ButtonLink href={`/course/${starter.id}`}>
-              Start the complete course
-              <ArrowRightIcon width={16} height={16} />
-            </ButtonLink>
-            <ButtonLink href="/courses" variant="ghost">
-              Browse all {courses.length} courses
-            </ButtonLink>
-          </div>
+          <HeroActions starterId={starter.id} />
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-zinc-500">
             <span className="inline-flex items-center gap-1.5"><CheckIcon width={14} height={14} className="text-cyan" /> Every course free</span>
@@ -158,24 +151,7 @@ export default function HomePage() {
       <section className="border-t border-zinc-900 py-20">
         <Reveal className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-white/[0.02] px-6 py-16 text-center sm:px-12">
           <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[36rem] -translate-x-1/2 rounded-full bg-cyan/10 blur-3xl" />
-          <div className="relative">
-            <h2 className="mx-auto max-w-2xl text-3xl font-semibold tracking-tight text-zinc-50 sm:text-4xl">
-              Every course, <GradientText>free</GradientText>.
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-zinc-400">
-              No paywall, no trial, no card. Create an account so your progress saves, then read
-              anything in the catalog.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-              <ButtonLink href={`/course/${starter.id}`}>
-                Start with {starter.title}
-                <ArrowRightIcon width={16} height={16} />
-              </ButtonLink>
-              <ButtonLink href="/courses" variant="ghost">
-                Browse all {courses.length} courses
-              </ButtonLink>
-            </div>
-          </div>
+          <FinalCta starterId={starter.id} starterTitle={starter.title} courseCount={courses.length} />
         </Reveal>
       </section>
     </Container>
