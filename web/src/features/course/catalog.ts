@@ -80,7 +80,7 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "The mental models behind every ML system — features, training, generalisation, and evaluation — taught with intuition first and just enough math.",
     priceLabel: "Free",
-    hours: "5h 40m",
+    hours: "3h 20m",
     outcomes: [
       "Frame a problem as supervised learning",
       "Understand training, loss, and gradient descent",
@@ -88,10 +88,11 @@ export const COURSES: CourseMeta[] = [
       "Evaluate models honestly",
     ],
     lessons: [
-      L("les_1", "What learning from data means", 23),
-      L("les_2", "Training and gradient descent", 30),
-      L("les_3", "Overfitting and generalisation", 28),
-      L("les_4", "Evaluating models honestly", 26),
+      // All four modules authored — course complete.
+      L("les_1", "What Learning From Data Means", 48),
+      L("les_2", "Training & Gradient Descent", 48),
+      L("les_3", "Overfitting & Generalisation", 52),
+      L("les_4", "Evaluating Models Honestly", 52),
     ],
   },
   {
@@ -167,7 +168,7 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "Past the mechanics: build the curated, decontaminated dataset, run supervised fine-tuning, align with RLHF and DPO, and prove a fine-tune helped without regressing.",
     priceLabel: "Free",
-    hours: "3h 40m",
+    hours: "3h 44m",
     outcomes: [
       "Build a curated, decontaminated SFT dataset",
       "Format and pack data with correct loss masking",
@@ -175,11 +176,11 @@ export const COURSES: CourseMeta[] = [
       "Evaluate fine-tunes and catch regressions",
     ],
     lessons: [
-      // Modules 1–2 authored; les_3–4 hold provisional topics until their modules land.
+      // All four modules authored — course complete.
       L("les_1", "The Data Engine: Curation & Formatting", 54),
       L("les_2", "Supervised Fine-Tuning & Direct Preference Optimization", 54),
-      L("les_3", "Advanced Alignment: RLHF, RLAIF & Reasoning", 54),
-      L("les_4", "Evaluating Fine-Tunes & Preventing Regressions", 48),
+      L("les_3", "Advanced Alignment: RLHF, RLAIF & Reasoning", 58),
+      L("les_4", "Evaluating Fine-Tunes & Preventing Regressions", 58),
     ],
   },
   {
@@ -189,7 +190,7 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "Packaging, serving, versioning, and monitoring models in production — plus the drift detection that tells you when reality has moved on.",
     priceLabel: "Free",
-    hours: "5h 30m",
+    hours: "3h 34m",
     outcomes: [
       "Serve a model behind a stable API",
       "Version data, models, and prompts",
@@ -197,10 +198,11 @@ export const COURSES: CourseMeta[] = [
       "Detect drift and roll back safely",
     ],
     lessons: [
-      L("les_1", "From notebook to endpoint", 26),
-      L("les_2", "Versioning models, data, and prompts", 27),
-      L("les_3", "Monitoring what matters", 28),
-      L("les_4", "Drift detection and rollback", 25),
+      // All four modules authored — course complete.
+      L("les_1", "From Notebook to Endpoint", 52),
+      L("les_2", "Versioning Models, Data & Prompts", 52),
+      L("les_3", "Monitoring What Matters", 52),
+      L("les_4", "Drift Detection & Rollback", 58),
     ],
   },
   {
@@ -210,7 +212,7 @@ export const COURSES: CourseMeta[] = [
     blurb:
       "Neurons, layers, backpropagation, and the transformer — the intuition behind the architecture that powers modern AI, without drowning in notation.",
     priceLabel: "Free",
-    hours: "6h 10m",
+    hours: "3h 40m",
     outcomes: [
       "Understand neurons, layers, and activations",
       "Follow backpropagation intuitively",
@@ -218,10 +220,11 @@ export const COURSES: CourseMeta[] = [
       "Know why depth and data scale",
     ],
     lessons: [
-      L("les_1", "Neurons, layers, and activations", 27),
-      L("les_2", "Backpropagation, intuitively", 30),
-      L("les_3", "Attention and transformers", 32),
-      L("les_4", "Why scale works", 26),
+      // All four modules authored — course complete.
+      L("les_1", "Neurons, Layers & Activations", 52),
+      L("les_2", "Backpropagation", 58),
+      L("les_3", "Attention & Transformers", 55),
+      L("les_4", "Why Scale Works", 55),
     ],
   },
   {
@@ -260,13 +263,13 @@ export const ROADMAP: readonly string[] = [
   "prompt-engineering", //  1 · starter, authored — the low-friction entry point
   "rag-systems",        //  2 · authored
   "agentic-ai",         //  3 · authored
-  "vector-search",      //  4 · authoring in progress
+  "vector-search",      //  4 · authored
   "ai-products",        //  5 · product craft (UX & streaming) before the ML deep dives
-  "llm-engineering",    //  6
-  "fine-tuning",        //  7 · heavier ML / ops track fills the back half
-  "ml-foundations",     //  8
-  "deep-learning",      //  9
-  "mlops",              // 10
+  "llm-engineering",    //  6 · authored
+  "fine-tuning",        //  7 · authored · heavier ML / ops track fills the back half
+  "ml-foundations",     //  8 · authored
+  "deep-learning",      //  9 · authored
+  "mlops",              // 10 · authored
 ];
 
 const roadmapRank = (id: string): number => {
